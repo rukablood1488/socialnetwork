@@ -1,302 +1,124 @@
+"""
+core/urls.py — усі маршрути додатку
+"""
 from django.urls import path
-from django.http import HttpResponse
-from django.shortcuts import redirect
+from . import views
 
 
 
 feed_urls = [
-    path(
-        '',
-        lambda request: HttpResponse('TODO: стрічка новин'),
-        name='feed',
-    ),
+    path('', views.feed, name='feed'),
 ]
 
 
 auth_urls = [
-    path(
-        'auth/register/',
-        lambda request: HttpResponse('TODO: реєстрація'),
-        name='register',
-    ),
+    path('auth/register/', views.register, name='register'),
 
-    path(
-        'auth/login/',
-        lambda request: HttpResponse('TODO: вхід'),
-        name='login',
-    ),
+    path('auth/login/', views.login_view, name='login'),
 
-    path(
-        'auth/logout/',
-        lambda request: redirect('feed'),
-        name='logout',
-    ),
+    path('auth/logout/', views.logout_view, name='logout'),
 ]
 
 
 profile_urls = [
-    path(
-        'profile/<str:username>/',
-        lambda request, username: HttpResponse(f'TODO: профіль {username}'),
-        name='profile',
-    ),
+    path('profile/<str:username>/', views.profile, name='profile'),
 
-    path(
-        'profile/<str:username>/edit/',
-        lambda request, username: HttpResponse(f'TODO: редагування профілю {username}'),
-        name='profile_edit',
-    ),
+    path('profile/<str:username>/edit/', views.profile_edit, name='profile_edit'),
 
-    path(
-        'profile/<str:username>/friends/',
-        lambda request, username: HttpResponse(f'TODO: друзі {username}'),
-        name='profile_friends',
-    ),
+    path('profile/<str:username>/friends/', views.profile_friends, name='profile_friends'),
 
-    path(
-        'profile/<str:username>/followers/',
-        lambda request, username: HttpResponse(f'TODO: підписники {username}'),
-        name='profile_followers',
-    ),
+    path('profile/<str:username>/followers/', views.profile_followers, name='profile_followers'),
 
-    path(
-        'profile/<str:username>/following/',
-        lambda request, username: HttpResponse(f'TODO: підписки {username}'),
-        name='profile_following',
-    ),
+    path('profile/<str:username>/following/', views.profile_following, name='profile_following'),
 ]
 
 
 post_urls = [
-    path(
-        'posts/create/',
-        lambda request: HttpResponse('TODO: створення поста'),
-        name='post_create',
-    ),
+    path('posts/create/', views.post_create, name='post_create'),
 
-    path(
-        'posts/<int:pk>/',
-        lambda request, pk: HttpResponse(f'TODO: деталі поста {pk}'),
-        name='post_detail',
-    ),
+    path('posts/<int:pk>/', views.post_detail, name='post_detail'),
 
-    path(
-        'posts/<int:pk>/edit/',
-        lambda request, pk: HttpResponse(f'TODO: редагування поста {pk}'),
-        name='post_edit',
-    ),
+    path('posts/<int:pk>/edit/', views.post_edit, name='post_edit'),
 
-    path(
-        'posts/<int:pk>/delete/',
-        lambda request, pk: redirect('feed'),
-        name='post_delete',
-    ),
+    path('posts/<int:pk>/delete/', views.post_delete, name='post_delete'),
 
-    path(
-        'posts/<int:pk>/like/',
-        lambda request, pk: redirect('post_detail', pk=pk),
-        name='post_like',
-    ),
+    path('posts/<int:pk>/like/', views.post_like, name='post_like'),
 
-    path(
-        'posts/<int:pk>/repost/',
-        lambda request, pk: redirect('post_detail', pk=pk),
-        name='post_repost',
-    ),
+    path('posts/<int:pk>/repost/', views.post_repost, name='post_repost'),
 
-    path(
-        'posts/<int:pk>/comment/',
-        lambda request, pk: redirect('post_detail', pk=pk),
-        name='comment_create',
-    ),
+    path('posts/<int:pk>/comment/', views.comment_create, name='comment_create'),
 
-    path(
-        'posts/comment/<int:pk>/delete/',
-        lambda request, pk: redirect('feed'),
-        name='comment_delete',
-    ),
+    path('posts/comment/<int:pk>/delete/', views.comment_delete, name='comment_delete'),
 ]
 
 
 friend_urls = [
-    path(
-        'friends/',
-        lambda request: HttpResponse('TODO: список друзів'),
-        name='friends',
-    ),
+    path('friends/', views.friends, name='friends'),
 
-    path(
-        'friends/requests/',
-        lambda request: HttpResponse('TODO: вхідні запити у друзі'),
-        name='friend_requests',
-    ),
+    path('friends/requests/', views.friend_requests, name='friend_requests'),
 
-    path(
-        'friends/request/<int:user_id>/',
-        lambda request, user_id: redirect('friends'),
-        name='friend_request_send',
-    ),
+    path('friends/request/<int:user_id>/', views.friend_request_send, name='friend_request_send'),
 
-    path(
-        'friends/accept/<int:request_id>/',
-        lambda request, request_id: redirect('friend_requests'),
-        name='friend_request_accept',
-    ),
+    path('friends/accept/<int:request_id>/', views.friend_request_accept, name='friend_request_accept'),
 
-    path(
-        'friends/decline/<int:request_id>/',
-        lambda request, request_id: redirect('friend_requests'),
-        name='friend_request_decline',
-    ),
+    path('friends/decline/<int:request_id>/', views.friend_request_decline, name='friend_request_decline'),
 
-    path(
-        'friends/remove/<int:user_id>/',
-        lambda request, user_id: redirect('friends'),
-        name='friend_remove',
-    ),
+    path('friends/remove/<int:user_id>/', views.friend_remove, name='friend_remove'),
 
-    path(
-        'friends/subscribe/<int:user_id>/',
-        lambda request, user_id: redirect('friends'),
-        name='subscribe',
-    ),
+    path('friends/subscribe/<int:user_id>/', views.subscribe, name='subscribe'),
 
-    path(
-        'friends/unsubscribe/<int:user_id>/',
-        lambda request, user_id: redirect('friends'),
-        name='unsubscribe',
-    ),
+    path('friends/unsubscribe/<int:user_id>/', views.unsubscribe, name='unsubscribe'),
 ]
 
 
 group_urls = [
-    path(
-        'groups/',
-        lambda request: HttpResponse('TODO: каталог груп'),
-        name='group_list',
-    ),
+    path('groups/', views.group_list, name='group_list'),
 
-    path(
-        'groups/create/',
-        lambda request: HttpResponse('TODO: створення групи'),
-        name='group_create',
-    ),
+    path('groups/create/', views.group_create, name='group_create'),
 
-    path(
-        'groups/<int:pk>/',
-        lambda request, pk: HttpResponse(f'TODO: сторінка групи {pk}'),
-        name='group_detail',
-    ),
+    path('groups/<int:pk>/', views.group_detail, name='group_detail'),
 
-    path(
-        'groups/<int:pk>/edit/',
-        lambda request, pk: HttpResponse(f'TODO: редагування групи {pk}'),
-        name='group_edit',
-    ),
+    path('groups/<int:pk>/edit/', views.group_edit, name='group_edit'),
 
-    path(
-        'groups/<int:pk>/delete/',
-        lambda request, pk: redirect('group_list'),
-        name='group_delete',
-    ),
+    path('groups/<int:pk>/delete/', views.group_delete, name='group_delete'),
 
-    path(
-        'groups/<int:pk>/join/',
-        lambda request, pk: redirect('group_detail', pk=pk),
-        name='group_join',
-    ),
+    path('groups/<int:pk>/join/', views.group_join, name='group_join'),
 
-    path(
-        'groups/<int:pk>/leave/',
-        lambda request, pk: redirect('group_detail', pk=pk),
-        name='group_leave',
-    ),
+    path('groups/<int:pk>/leave/', views.group_leave, name='group_leave'),
 
-    path(
-        'groups/<int:pk>/members/',
-        lambda request, pk: HttpResponse(f'TODO: учасники групи {pk}'),
-        name='group_members',
-    ),
+    path('groups/<int:pk>/members/', views.group_members, name='group_members'),
 
-    path(
-        'groups/<int:pk>/members/<int:user_id>/kick/',
-        lambda request, pk, user_id: redirect('group_members', pk=pk),
-        name='group_kick',
-    ),
+    path('groups/<int:pk>/members/<int:user_id>/kick/', views.group_kick, name='group_kick'),
 
-    path(
-        'groups/<int:pk>/members/<int:user_id>/promote/',
-        lambda request, pk, user_id: redirect('group_members', pk=pk),
-        name='group_promote',
-    ),
+    path('groups/<int:pk>/members/<int:user_id>/promote/', views.group_promote, name='group_promote'),
 ]
 
 
 chat_urls = [
-    path(
-        'chat/',
-        lambda request: HttpResponse('TODO: список чатів'),
-        name='chat_list',
-    ),
 
-    path(
-        'chat/create/<int:user_id>/',
-        lambda request, user_id: redirect('chat_list'),
-        name='chat_create_private',
-    ),
+    path('chat/', views.chat_list, name='chat_list'),
 
-    path(
-        'chat/create-group/',
-        lambda request: HttpResponse('TODO: створення групового чату'),
-        name='chat_create_group',
-    ),
+    path('chat/create/<int:user_id>/', views.chat_create_private, name='chat_create_private'),
 
-    path(
-        'chat/<int:pk>/',
-        lambda request, pk: HttpResponse(f'TODO: чат {pk}'),
-        name='chat_detail',
-    ),
+    path('chat/create-group/', views.chat_create_group, name='chat_create_group'),
 
-    path(
-        'chat/<int:pk>/send/',
-        lambda request, pk: redirect('chat_detail', pk=pk),
-        name='message_send',
-    ),
+    path('chat/<int:pk>/', views.chat_detail, name='chat_detail'),
 
-    path(
-        'chat/<int:pk>/message/<int:msg_id>/delete/',
-        lambda request, pk, msg_id: redirect('chat_detail', pk=pk),
-        name='message_delete',
-    ),
+    path('chat/<int:pk>/send/', views.message_send, name='message_send'),
 
-    path(
-        'chat/<int:pk>/read/',
-        lambda request, pk: redirect('chat_detail', pk=pk),
-        name='chat_mark_read',
-    ),
+    path('chat/<int:pk>/message/<int:msg_id>/delete/', views.message_delete, name='message_delete'),
+
+    path('chat/<int:pk>/read/', views.chat_mark_read, name='chat_mark_read'),
 ]
 
 
 notification_urls = [
-    path(
-        'notifications/',
-        lambda request: HttpResponse('TODO: список сповіщень'),
-        name='notifications',
-    ),
+    path('notifications/', views.notifications, name='notifications'),
 
-    path(
-        'notifications/<int:pk>/read/',
-        lambda request, pk: redirect('notifications'),
-        name='notification_read',
-    ),
+    path('notifications/<int:pk>/read/', views.notification_read, name='notification_read'),
 
-    path(
-        'notifications/read-all/',
-        lambda request: redirect('notifications'),
-        name='notifications_read_all',
-    ),
+    path('notifications/read-all/', views.notifications_read_all, name='notifications_read_all'),
 ]
-
 
 
 urlpatterns = (
