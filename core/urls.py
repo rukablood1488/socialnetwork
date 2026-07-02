@@ -1,6 +1,3 @@
-"""
-core/urls.py — усі маршрути додатку
-"""
 from django.urls import path
 from . import views
 
