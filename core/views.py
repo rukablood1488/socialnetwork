@@ -170,3 +170,46 @@ def profile_following(request, username):
 @login_required
 def feed(request):
     return HttpResponse('Вітаємо, {}! Стрічка буде тут.'.format(request.user.username))
+
+
+# ЗАГЛУШКИ 
+
+ 
+@login_required
+def friends(request):
+    return HttpResponse('TODO: список друзів')
+ 
+ 
+@login_required
+def friend_request_send(request, user_id):
+    return redirect('profile', username=get_object_or_404(User, pk=user_id).username)
+ 
+ 
+@login_required
+def friend_remove(request, user_id):
+    return redirect('profile', username=get_object_or_404(User, pk=user_id).username)
+ 
+ 
+@login_required
+def subscribe(request, user_id):
+    return redirect('profile', username=get_object_or_404(User, pk=user_id).username)
+ 
+ 
+@login_required
+def unsubscribe(request, user_id):
+    return redirect('profile', username=get_object_or_404(User, pk=user_id).username)
+ 
+ 
+@login_required
+def group_list(request):
+    return HttpResponse('TODO: групи')
+ 
+ 
+@login_required
+def chat_list(request):
+    return HttpResponse('TODO: чат')
+ 
+ 
+@login_required
+def notifications(request):
+    return HttpResponse('TODO: сповіщення')

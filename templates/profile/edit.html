@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Редагування профілю — SocialNet{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12 col-md-6">
+
+    <h1 class="h4 mb-4">Редагувати профіль</h1>
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">
+        {% for error in form.non_field_errors %}
+          <div>{{ error }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+
+      <div class="mb-3">
+        <label for="{{ form.first_name.id_for_label }}" class="form-label">
+          {{ form.first_name.label }}
+        </label>
+        <input
+          type="text"
+          name="{{ form.first_name.html_name }}"
+          id="{{ form.first_name.id_for_label }}"
+          value="{{ form.first_name.value|default:'' }}"
+          class="form-control {% if form.first_name.errors %}is-invalid{% endif %}"
+        >
+        {% for error in form.first_name.errors %}
+          <div class="invalid-feedback">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="mb-3">
+        <label for="{{ form.last_name.id_for_label }}" class="form-label">
+          {{ form.last_name.label }}
+        </label>
+        <input
+          type="text"
+          name="{{ form.last_name.html_name }}"
+          id="{{ form.last_name.id_for_label }}"
+          value="{{ form.last_name.value|default:'' }}"
+          class="form-control {% if form.last_name.errors %}is-invalid{% endif %}"
+        >
+        {% for error in form.last_name.errors %}
+          <div class="invalid-feedback">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="mb-3">
+        <label for="{{ form.email.id_for_label }}" class="form-label">
+          {{ form.email.label }}
+        </label>
+        <input
+          type="email"
+          name="{{ form.email.html_name }}"
+          id="{{ form.email.id_for_label }}"
+          value="{{ form.email.value|default:'' }}"
+          class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+        >
+        {% for error in form.email.errors %}
+          <div class="invalid-feedback">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="mb-3">
+        <label for="{{ form.bio.id_for_label }}" class="form-label">
+          {{ form.bio.label }}
+        </label>
+        <textarea
+          name="{{ form.bio.html_name }}"
+          id="{{ form.bio.id_for_label }}"
+          rows="4"
+          class="form-control {% if form.bio.errors %}is-invalid{% endif %}"
+        >{{ form.bio.value|default:'' }}</textarea>
+        {% for error in form.bio.errors %}
+          <div class="invalid-feedback">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="mb-3">
+        <label for="{{ form.birth_date.id_for_label }}" class="form-label">
+          {{ form.birth_date.label }}
+        </label>
+        <input
+          type="date"
+          name="{{ form.birth_date.html_name }}"
+          id="{{ form.birth_date.id_for_label }}"
+          value="{{ form.birth_date.value|default:'' }}"
+          class="form-control {% if form.birth_date.errors %}is-invalid{% endif %}"
+        >
+        {% for error in form.birth_date.errors %}
+          <div class="invalid-feedback">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="mb-3">
+        <label for="{{ form.avatar.id_for_label }}" class="form-label">
+          {{ form.avatar.label }}
+        </label>
+        {% if request.user.profile.avatar %}
+          <div class="mb-1">
+            <img src="{{ request.user.profile.avatar.url }}"
+                 width="60" height="60"
+                 class="rounded-circle"
+                 style="object-fit:cover;"
+                 alt="Поточний аватар">
+          </div>
+        {% endif %}
+        <input
+          type="file"
+          name="{{ form.avatar.html_name }}"
+          id="{{ form.avatar.id_for_label }}"
+          accept="image/*"
+          class="form-control {% if form.avatar.errors %}is-invalid{% endif %}"
+        >
+        {% for error in form.avatar.errors %}
+          <div class="invalid-feedback">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="mb-4">
+        <label for="{{ form.cover.id_for_label }}" class="form-label">
+          {{ form.cover.label }}
+        </label>
+        {% if request.user.profile.cover %}
+          <div class="mb-1">
+            <img src="{{ request.user.profile.cover.url }}"
+                 class="img-fluid rounded"
+                 style="max-height:80px;"
+                 alt="Поточна обкладинка">
+          </div>
+        {% endif %}
+        <input
+          type="file"
+          name="{{ form.cover.html_name }}"
+          id="{{ form.cover.id_for_label }}"
+          accept="image/*"
+          class="form-control {% if form.cover.errors %}is-invalid{% endif %}"
+        >
+        {% for error in form.cover.errors %}
+          <div class="invalid-feedback">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Зберегти</button>
+        <a href="{% url 'profile' request.user.username %}"
+           class="btn btn-outline-secondary">Скасувати</a>
+      </div>
+
+    </form>
+  </div>
+</div>
+{% endblock %}
