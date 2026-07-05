@@ -16,15 +16,15 @@ auth_urls = [
 
 
 profile_urls = [
-    #path('profile/<str:username>/', views.profile, name='profile'),
+    path('profile/<str:username>/', views.profile, name='profile'),
 
-    #path('profile/<str:username>/edit/', views.profile_edit, name='profile_edit'),
+    path('profile/<str:username>/edit/', views.profile_edit, name='profile_edit'),
 
-    #path('profile/<str:username>/friends/', views.profile_friends, name='profile_friends'),
+    path('profile/<str:username>/friends/', views.profile_friends, name='profile_friends'),
 
-    #path('profile/<str:username>/followers/', views.profile_followers, name='profile_followers'),
+    path('profile/<str:username>/followers/', views.profile_followers, name='profile_followers'),
 
-    #path('profile/<str:username>/following/', views.profile_following, name='profile_following'),
+    path('profile/<str:username>/following/', views.profile_following, name='profile_following'),
 ]
 
 

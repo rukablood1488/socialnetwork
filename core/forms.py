@@ -63,3 +63,72 @@ class LoginForm(forms.Form):
         label='Пароль',
         widget=forms.PasswordInput(attrs={'placeholder': '••••••••'}),
     )
+
+
+class ProfileEditForm(forms.Form):
+    first_name = forms.CharField(
+        label='Імʼя',
+        max_length=150,
+        required=False,
+        widget=forms.TextInput(attrs={'placeholder': 'Іван'}),
+    )
+    last_name = forms.CharField(
+        label='Прізвище',
+        max_length=150,
+        required=False,
+        widget=forms.TextInput(attrs={'placeholder': 'Петренко'}),
+    )
+    email = forms.EmailField(
+        label='Email',
+        required=False,
+        widget=forms.EmailInput(attrs={'placeholder': 'ivan@example.com'}),
+    )
+ 
+    bio = forms.CharField(
+        label='Біографія',
+        required=False,
+        widget=forms.Textarea(attrs={'rows': 4, 'placeholder': 'Розкажіть про себе...'}),
+    )
+    birth_date = forms.DateField(
+        label='Дата народження',
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date'}),
+    )
+    avatar = forms.ImageField(
+        label='Аватар',
+        required=False,
+    )
+    cover = forms.ImageField(
+        label='Обкладинка',
+        required=False,
+    )
+ 
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if user is not None:
+            self.fields['first_name'].initial = user.first_name
+            self.fields['last_name'].initial = user.last_name
+            self.fields['email'].initial = user.email
+            profile = getattr(user, 'profile', None)
+            if profile:
+                self.fields['bio'].initial = profile.bio
+                self.fields['birth_date'].initial = profile.birth_date
+ 
+    def save(self, user):
+        data = self.cleaned_data
+ 
+        user.first_name = data.get('first_name', '')
+        user.last_name = data.get('last_name', '')
+        user.email = data.get('email', '')
+        user.save()
+ 
+        profile = user.profile
+        profile.bio = data.get('bio', '')
+        profile.birth_date = data.get('birth_date') or None
+        if data.get('avatar'):
+            profile.avatar = data['avatar']
+        if data.get('cover'):
+            profile.cover = data['cover']
+        profile.save()
+ 
+        return user

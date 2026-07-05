@@ -7,7 +7,7 @@ from django.http import HttpResponse
 
 from .models import *
 
-from .forms import RegisterForm, LoginForm
+from .forms import *
  
  
 # АВТЕНТИФІКАЦІЯ
@@ -54,6 +54,116 @@ def logout_view(request):
         logout(request)
         return redirect('login')
     return redirect('feed')
+
+
+
+# ПРОФІЛЬ
+ 
+def profile(request, username):
+    profile_user = get_object_or_404(User, username=username)
+ 
+    posts = profile_user.posts.filter(
+        group__isnull=True,
+    ).order_by('-created_at')
+ 
+    friends_count = Friendship.objects.filter(
+        Q(sender=profile_user) | Q(receiver=profile_user),
+        status=Friendship.Status.ACCEPTED,
+    ).count()
+    followers_count = Subscription.objects.filter(following=profile_user).count()
+    following_count = Subscription.objects.filter(follower=profile_user).count()
+ 
+
+    is_friend = is_pending = is_following = False
+    if request.user.is_authenticated and request.user != profile_user:
+        is_friend = Friendship.objects.filter(
+            Q(sender=request.user, receiver=profile_user) |
+            Q(sender=profile_user, receiver=request.user),
+            status=Friendship.Status.ACCEPTED,
+        ).exists()
+        is_pending = Friendship.objects.filter(
+            sender=request.user,
+            receiver=profile_user,
+            status=Friendship.Status.PENDING,
+        ).exists()
+        is_following = Subscription.objects.filter(
+            follower=request.user,
+            following=profile_user,
+        ).exists()
+ 
+    return render(request, 'profile/detail.html', {
+        'profile_user': profile_user,
+        'posts': posts,
+        'friends_count': friends_count,
+        'followers_count': followers_count,
+        'following_count': following_count,
+        'is_friend': is_friend,
+        'is_pending': is_pending,
+        'is_following': is_following,
+    })
+ 
+ 
+@login_required
+def profile_edit(request, username):
+    if request.user.username != username:
+        return redirect('profile', username=request.user.username)
+ 
+    form = ProfileEditForm(
+        request.POST or None,
+        request.FILES or None,
+        user=request.user,
+    )
+ 
+    if request.method == 'POST' and form.is_valid():
+        form.save(user=request.user)
+        return redirect('profile', username=username)
+ 
+    return render(request, 'profile/edit.html', {'form': form})
+ 
+ 
+def profile_friends(request, username):
+    profile_user = get_object_or_404(User, username=username)
+    friendships = Friendship.objects.filter(
+        Q(sender=profile_user) | Q(receiver=profile_user),
+        status=Friendship.Status.ACCEPTED,
+    ).select_related('sender', 'receiver')
+ 
+    friends = [
+        f.receiver if f.sender == profile_user else f.sender
+        for f in friendships
+    ]
+    return render(request, 'profile/friends.html', {
+        'profile_user': profile_user,
+        'friends': friends,
+    })
+ 
+ 
+def profile_followers(request, username):
+    profile_user = get_object_or_404(User, username=username)
+    followers = [
+        s.follower for s in
+        Subscription.objects.filter(
+            following=profile_user,
+        ).select_related('follower')
+    ]
+    return render(request, 'profile/followers.html', {
+        'profile_user': profile_user,
+        'followers': followers,
+    })
+ 
+ 
+def profile_following(request, username):
+    profile_user = get_object_or_404(User, username=username)
+    following = [
+        s.following for s in
+        Subscription.objects.filter(
+            follower=profile_user,
+        ).select_related('following')
+    ]
+    return render(request, 'profile/following.html', {
+        'profile_user': profile_user,
+        'following': following,
+    })
 
 
 #------------------
