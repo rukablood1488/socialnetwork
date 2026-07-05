@@ -3,6 +3,7 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Q
+from django.http import HttpResponse
 
 from .models import *
 
@@ -53,3 +54,9 @@ def logout_view(request):
         logout(request)
         return redirect('login')
     return redirect('feed')
+
+
+#------------------
+@login_required
+def feed(request):
+    return HttpResponse('Вітаємо, {}! Стрічка буде тут.'.format(request.user.username))
