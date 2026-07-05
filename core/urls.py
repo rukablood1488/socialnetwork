@@ -48,26 +48,26 @@ post_urls = [
 
 
 friend_urls = [
-    #path('friends/', views.friends, name='friends'),
+    path('friends/', views.friends, name='friends'),
 
     #path('friends/requests/', views.friend_requests, name='friend_requests'),
 
-    #path('friends/request/<int:user_id>/', views.friend_request_send, name='friend_request_send'),
+    path('friends/request/<int:user_id>/', views.friend_request_send, name='friend_request_send'),
 
     #path('friends/accept/<int:request_id>/', views.friend_request_accept, name='friend_request_accept'),
 
     #path('friends/decline/<int:request_id>/', views.friend_request_decline, name='friend_request_decline'),
 
-    #path('friends/remove/<int:user_id>/', views.friend_remove, name='friend_remove'),
+    path('friends/remove/<int:user_id>/', views.friend_remove, name='friend_remove'),
 
-    #path('friends/subscribe/<int:user_id>/', views.subscribe, name='subscribe'),
+    path('friends/subscribe/<int:user_id>/', views.subscribe, name='subscribe'),
 
-    #path('friends/unsubscribe/<int:user_id>/', views.unsubscribe, name='unsubscribe'),
+    path('friends/unsubscribe/<int:user_id>/', views.unsubscribe, name='unsubscribe'),
 ]
 
 
 group_urls = [
-    #path('groups/', views.group_list, name='group_list'),
+    path('groups/', views.group_list, name='group_list'),
 
     #path('groups/create/', views.group_create, name='group_create'),
 
@@ -91,7 +91,7 @@ group_urls = [
 
 chat_urls = [
 
-    #path('chat/', views.chat_list, name='chat_list'),
+    path('chat/', views.chat_list, name='chat_list'),
 
     #path('chat/create/<int:user_id>/', views.chat_create_private, name='chat_create_private'),
 
@@ -108,7 +108,7 @@ chat_urls = [
 
 
 notification_urls = [
-    #path('notifications/', views.notifications, name='notifications'),
+    path('notifications/', views.notifications, name='notifications'),
 
     #path('notifications/<int:pk>/read/', views.notification_read, name='notification_read'),
 

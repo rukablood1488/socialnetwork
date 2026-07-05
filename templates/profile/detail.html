@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile_user.username }} — SocialNet{% endblock %}
+
+{% block content %}
+
+{% if profile_user.profile.cover %}
+  <img src="{{ profile_user.profile.cover.url }}"
+       alt="Обкладинка"
+       class="w-100 mb-3"
+       style="max-height:200px; object-fit:cover; border-radius:8px;">
+{% endif %}
+
+<div class="d-flex align-items-center gap-3 mb-3">
+  {% if profile_user.profile.avatar %}
+    <img src="{{ profile_user.profile.avatar.url }}"
+         alt="Аватар"
+         class="rounded-circle"
+         width="80" height="80"
+         style="object-fit:cover;">
+  {% else %}
+    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white"
+         style="width:80px;height:80px;font-size:2rem;">
+      {{ profile_user.username|first|upper }}
+    </div>
+  {% endif %}
+
+  <div>
+    <h1 class="h4 mb-0">
+      {{ profile_user.get_full_name|default:profile_user.username }}
+    </h1>
+    <p class="text-muted mb-0">@{{ profile_user.username }}</p>
+  </div>
+</div>
+
+{% if profile_user.profile.bio %}
+  <p class="mb-2">{{ profile_user.profile.bio }}</p>
+{% endif %}
+
+{% if profile_user.profile.birth_date %}
+  <p class="text-muted small mb-2">
+    🎂 {{ profile_user.profile.birth_date|date:"d.m.Y" }}
+  </p>
+{% endif %}
+
+<div class="d-flex gap-3 mb-3">
+  <a href="{% url 'profile_friends' profile_user.username %}" class="text-decoration-none">
+    <strong>{{ friends_count }}</strong>
+    <span class="text-muted small">друзів</span>
+  </a>
+  <a href="{% url 'profile_followers' profile_user.username %}" class="text-decoration-none">
+    <strong>{{ followers_count }}</strong>
+    <span class="text-muted small">підписників</span>
+  </a>
+  <a href="{% url 'profile_following' profile_user.username %}" class="text-decoration-none">
+    <strong>{{ following_count }}</strong>
+    <span class="text-muted small">підписок</span>
+  </a>
+</div>
+
+{% if user == profile_user %}
+  <a href="{% url 'profile_edit' profile_user.username %}"
+     class="btn btn-outline-secondary btn-sm mb-3">
+    Редагувати профіль
+  </a>
+{% elif user.is_authenticated %}
+  <div class="d-flex gap-2 mb-3">
+    {% if is_friend %}
+      <form method="post" action="{% url 'friend_remove' profile_user.pk %}">
+        {% csrf_token %}
+        <button class="btn btn-outline-danger btn-sm">Видалити з друзів</button>
+      </form>
+    {% elif is_pending %}
+      <button class="btn btn-secondary btn-sm" disabled>Запит надіслано</button>
+    {% else %}
+      <form method="post" action="{% url 'friend_request_send' profile_user.pk %}">
+        {% csrf_token %}
+        <button class="btn btn-primary btn-sm">Додати в друзі</button>
+      </form>
+    {% endif %}
+
+    {% if is_following %}
+      <form method="post" action="{% url 'unsubscribe' profile_user.pk %}">
+        {% csrf_token %}
+        <button class="btn btn-outline-secondary btn-sm">Відписатись</button>
+      </form>
+    {% else %}
+      <form method="post" action="{% url 'subscribe' profile_user.pk %}">
+        {% csrf_token %}
+        <button class="btn btn-outline-primary btn-sm">Підписатись</button>
+      </form>
+    {% endif %}
+  </div>
+{% endif %}
+
+<hr>
+
+<h2 class="h5 mb-3">Публікації</h2>
+
+{% if posts %}
+  {% for post in posts %}
+    <div class="border rounded p-3 mb-3">
+      <p class="mb-1">{{ post.text }}</p>
+      {% if post.image %}
+        <img src="{{ post.image.url }}" class="img-fluid rounded mb-1" alt="">
+      {% endif %}
+      {% if post.link %}
+        <a href="{{ post.link }}" target="_blank" class="d-block small mb-1">{{ post.link }}</a>
+      {% endif %}
+      <small class="text-muted">{{ post.created_at|date:"d.m.Y H:i" }}</small>
+      <a href="{% url 'post_detail' post.pk %}" class="small ms-2">Детальніше</a>
+    </div>
+  {% endfor %}
+{% else %}
+  <p class="text-muted">Публікацій ще немає.</p>
+{% endif %}
+
+{% endblock %}
