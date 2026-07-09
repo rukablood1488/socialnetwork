@@ -3,28 +3,28 @@ from . import views
 
 
 feed_urls = [
-    path('', views.feed, name='feed'),
+    path('', views.FeedView.as_view(), name='feed'),
 ]
 
 auth_urls = [
-    path('auth/register/', views.register, name='register'),
+    path('auth/register/', views.RegisterView.as_view(), name='register'),
 
-    path('auth/login/', views.login_view, name='login'),
+    path('auth/login/', views.LoginView.as_view(), name='login'),
 
-    path('auth/logout/', views.logout_view, name='logout'),
+    path('auth/logout/', views.LogoutView.as_view(), name='logout'),
 ]
 
 
 profile_urls = [
-    path('profile/<str:username>/', views.profile, name='profile'),
+    path('profile/<str:username>/', views.ProfileView.as_view(), name='profile'),
 
-    path('profile/<str:username>/edit/', views.profile_edit, name='profile_edit'),
+    path('profile/<str:username>/edit/', views.ProfileEditView.as_view(), name='profile_edit'),
 
-    path('profile/<str:username>/friends/', views.profile_friends, name='profile_friends'),
+    path('profile/<str:username>/friends/', views.ProfileFriendsView.as_view(), name='profile_friends'),
 
-    path('profile/<str:username>/followers/', views.profile_followers, name='profile_followers'),
+    path('profile/<str:username>/followers/', views.ProfileFollowersView.as_view(), name='profile_followers'),
 
-    path('profile/<str:username>/following/', views.profile_following, name='profile_following'),
+    path('profile/<str:username>/following/', views.ProfileFollowingView.as_view(), name='profile_following'),
 ]
 
 
@@ -48,26 +48,26 @@ post_urls = [
 
 
 friend_urls = [
-    path('friends/', views.friends, name='friends'),
+    path('friends/', views.FriendsView.as_view(), name='friends'),
 
     #path('friends/requests/', views.friend_requests, name='friend_requests'),
 
-    path('friends/request/<int:user_id>/', views.friend_request_send, name='friend_request_send'),
+    path('friends/request/<int:user_id>/', views.FriendRequestSendView.as_view(), name='friend_request_send'),
 
     #path('friends/accept/<int:request_id>/', views.friend_request_accept, name='friend_request_accept'),
 
     #path('friends/decline/<int:request_id>/', views.friend_request_decline, name='friend_request_decline'),
 
-    path('friends/remove/<int:user_id>/', views.friend_remove, name='friend_remove'),
+    path('friends/remove/<int:user_id>/', views.FriendRemoveView.as_view(), name='friend_remove'),
 
-    path('friends/subscribe/<int:user_id>/', views.subscribe, name='subscribe'),
+    path('friends/subscribe/<int:user_id>/', views.SubscribeView.as_view(), name='subscribe'),
 
-    path('friends/unsubscribe/<int:user_id>/', views.unsubscribe, name='unsubscribe'),
+    path('friends/unsubscribe/<int:user_id>/', views.UnsubscribeView.as_view(), name='unsubscribe'),
 ]
 
 
 group_urls = [
-    path('groups/', views.group_list, name='group_list'),
+    path('groups/', views.GroupListView.as_view(), name='group_list'),
 
     #path('groups/create/', views.group_create, name='group_create'),
 
@@ -91,7 +91,7 @@ group_urls = [
 
 chat_urls = [
 
-    path('chat/', views.chat_list, name='chat_list'),
+    path('chat/', views.ChatListView.as_view(), name='chat_list'),
 
     #path('chat/create/<int:user_id>/', views.chat_create_private, name='chat_create_private'),
 
@@ -108,7 +108,7 @@ chat_urls = [
 
 
 notification_urls = [
-    path('notifications/', views.notifications, name='notifications'),
+    path('notifications/', views.NotificationsView.as_view(), name='notifications'),
 
     #path('notifications/<int:pk>/read/', views.notification_read, name='notification_read'),
 
