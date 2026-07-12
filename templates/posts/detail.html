@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Публікація #{{ post.pk }} — SocialNet{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12 col-md-8">
+
+
+    <div class="border rounded p-3 mb-4">
+
+      <div class="d-flex align-items-center gap-2 mb-3">
+        {% if post.author.profile.avatar %}
+          <img src="{{ post.author.profile.avatar.url }}"
+               width="40" height="40"
+               class="rounded-circle"
+               style="object-fit:cover;"
+               alt="">
+        {% else %}
+          <div class="rounded-circle bg-secondary d-flex align-items-center
+                      justify-content-center text-white flex-shrink-0"
+               style="width:40px;height:40px;">
+            {{ post.author.username|first|upper }}
+          </div>
+        {% endif %}
+        <div>
+          <a href="{% url 'profile' post.author.username %}"
+             class="fw-semibold text-decoration-none">
+            {{ post.author.get_full_name|default:post.author.username }}
+          </a>
+          <div class="text-muted small">{{ post.created_at|date:"d.m.Y H:i" }}</div>
+        </div>
+
+        {% if user == post.author or user.is_staff %}
+          <div class="ms-auto d-flex gap-2">
+            <a href="{% url 'post_edit' post.pk %}"
+               class="btn btn-outline-secondary btn-sm">Редагувати</a>
+            <form method="post" action="{% url 'post_delete' post.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-danger btn-sm"
+                      onclick="return confirm('Видалити публікацію?')">
+                Видалити
+              </button>
+            </form>
+          </div>
+        {% endif %}
+      </div>
+
+
+      {% if post.text %}
+        <p class="mb-3">{{ post.text }}</p>
+      {% endif %}
+
+
+      {% if post.image %}
+        <img src="{{ post.image.url }}"
+             class="img-fluid rounded mb-3"
+             alt="">
+      {% endif %}
+
+
+      {% if post.video %}
+        <video controls class="w-100 rounded mb-3">
+          <source src="{{ post.video.url }}">
+        </video>
+      {% endif %}
+
+
+      {% if post.link %}
+        <a href="{{ post.link }}" target="_blank"
+           class="d-block text-truncate mb-3 small">
+          {{ post.link }}
+        </a>
+      {% endif %}
+
+      <div class="d-flex gap-3 pt-2 border-top">
+
+
+        {% if user.is_authenticated %}
+          <form method="post" action="{% url 'post_like' post.pk %}">
+            {% csrf_token %}
+            <button type="submit"
+                    class="btn btn-sm {% if user_liked %}btn-danger{% else %}btn-outline-danger{% endif %}">
+              ❤️ {{ likes_count }}
+            </button>
+          </form>
+        {% else %}
+          <span class="btn btn-sm btn-outline-danger disabled">❤️ {{ likes_count }}</span>
+        {% endif %}
+
+        {% if user.is_authenticated and user != post.author %}
+          <form method="post" action="{% url 'post_repost' post.pk %}">
+            {% csrf_token %}
+            <button type="submit"
+                    class="btn btn-sm {% if user_reposted %}btn-success{% else %}btn-outline-success{% endif %}">
+              🔁 {{ repost_count }}
+            </button>
+          </form>
+        {% else %}
+          <span class="btn btn-sm btn-outline-success disabled">🔁 {{ repost_count }}</span>
+        {% endif %}
+
+        <span class="btn btn-sm btn-outline-secondary disabled">
+          💬 {{ post.comments.count }}
+        </span>
+
+      </div>
+    </div>
+
+
+    {% if user.is_authenticated %}
+      <div class="mb-4">
+        <h2 class="h6 mb-2">Залишити коментар</h2>
+        <form method="post" action="{% url 'comment_create' post.pk %}">
+          {% csrf_token %}
+          <textarea
+            name="text"
+            rows="2"
+            class="form-control mb-2"
+            placeholder="Написати коментар..."
+          ></textarea>
+          <button type="submit" class="btn btn-primary btn-sm">Відправити</button>
+        </form>
+      </div>
+    {% endif %}
+
+
+    <h2 class="h6 mb-3">Коментарі ({{ post.comments.count }})</h2>
+
+    {% if comments %}
+      {% for comment in comments %}
+        {% include "posts/_comment.html" with comment=comment depth=0 %}
+      {% endfor %}
+    {% else %}
+      <p class="text-muted small">Коментарів ще немає. Будьте першим!</p>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

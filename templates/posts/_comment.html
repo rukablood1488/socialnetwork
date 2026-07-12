@@ -1,0 +1,84 @@
+<div class="mb-3 {% if depth > 0 %}ms-4 border-start ps-3{% endif %}">
+  <div class="d-flex align-items-start gap-2">
+
+    {% if comment.author.profile.avatar %}
+      <img src="{{ comment.author.profile.avatar.url }}"
+           width="32" height="32"
+           class="rounded-circle flex-shrink-0"
+           style="object-fit:cover;"
+           alt="">
+    {% else %}
+      <div class="rounded-circle bg-secondary d-flex align-items-center
+                  justify-content-center text-white flex-shrink-0"
+           style="width:32px;height:32px;font-size:0.8rem;">
+        {{ comment.author.username|first|upper }}
+      </div>
+    {% endif %}
+
+    <div class="flex-grow-1">
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <a href="{% url 'profile' comment.author.username %}"
+           class="fw-semibold small text-decoration-none">
+          {{ comment.author.get_full_name|default:comment.author.username }}
+        </a>
+        <span class="text-muted" style="font-size:0.75rem;">
+          {{ comment.created_at|date:"d.m.Y H:i" }}
+        </span>
+
+
+        {% if user == comment.author or user.is_staff %}
+          <form method="post"
+                action="{% url 'comment_delete' comment.pk %}"
+                class="ms-auto">
+            {% csrf_token %}
+            <button type="submit"
+                    class="btn btn-link btn-sm text-danger p-0"
+                    onclick="return confirm('Видалити коментар?')">
+              Видалити
+            </button>
+          </form>
+        {% endif %}
+      </div>
+
+
+      <p class="mb-1 small">{{ comment.text }}</p>
+
+
+      {% if user.is_authenticated and depth == 0 %}
+        <button
+          class="btn btn-link btn-sm p-0 text-muted"
+          style="font-size:0.8rem;"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#reply-form-{{ comment.pk }}"
+        >
+          Відповісти
+        </button>
+
+
+        <div class="collapse mt-2" id="reply-form-{{ comment.pk }}">
+          <form method="post" action="{% url 'comment_create' post.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="parent_id" value="{{ comment.pk }}">
+            <textarea
+              name="text"
+              rows="2"
+              class="form-control form-control-sm mb-1"
+              placeholder="Відповісти {{ comment.author.username }}..."
+            ></textarea>
+            <button type="submit" class="btn btn-primary btn-sm">Відправити</button>
+          </form>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+
+  {% if comment.replies.all and depth == 0 %}
+    <div class="mt-2">
+      {% for reply in comment.replies.all %}
+        {% include "posts/_comment.html" with comment=reply depth=1 %}
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
