@@ -195,6 +195,129 @@ class ProfileFollowingView(View):
         })
 
 
+# ПОСТИ
+ 
+class PostCreateView(LoginRequiredMixin, View):
+    template_name = 'posts/create.html'
+ 
+    def get(self, request):
+        form = PostForm()
+        return render(request, self.template_name, {'form': form})
+ 
+    def post(self, request):
+        form = PostForm(request.POST, request.FILES)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
+            post.save()
+            return redirect('post_detail', pk=post.pk)
+        return render(request, self.template_name, {'form': form})
+ 
+ 
+class PostDetailView(View):
+    template_name = 'posts/detail.html'
+ 
+    def get(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        comments = post.comments.filter(
+            parent__isnull=True,
+        ).select_related('author').prefetch_related('replies__author')
+        comment_form = CommentForm()
+ 
+        user_liked    = False
+        user_reposted = False
+        if request.user.is_authenticated:
+            user_liked    = post.likes.filter(user=request.user).exists()
+            user_reposted = post.reposts.filter(user=request.user).exists()
+ 
+        return render(request, self.template_name, {
+            'post': post,
+            'comments': comments,
+            'comment_form': comment_form,
+            'likes_count': post.likes.count(),
+            'repost_count': post.reposts.count(),
+            'user_liked': user_liked,
+            'user_reposted': user_reposted,
+        })
+ 
+ 
+class PostEditView(LoginRequiredMixin, View):
+    template_name = 'posts/edit.html'
+ 
+    def get_post(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        if post.author != request.user and not request.user.is_staff:
+            return None, redirect('post_detail', pk=pk)
+        return post, None
+ 
+    def get(self, request, pk):
+        post, error = self.get_post(request, pk)
+        if error:
+            return error
+        form = PostForm(instance=post)
+        return render(request, self.template_name, {'form': form, 'post': post})
+ 
+    def post(self, request, pk):
+        post, error = self.get_post(request, pk)
+        if error:
+            return error
+        form = PostForm(request.POST, request.FILES, instance=post)
+        if form.is_valid():
+            form.save()
+            return redirect('post_detail', pk=post.pk)
+        return render(request, self.template_name, {'form': form, 'post': post})
+ 
+ 
+class PostDeleteView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        if post.author == request.user or request.user.is_staff:
+            post.delete()
+        return redirect('feed')
+ 
+ 
+class PostLikeView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        like, created = Like.objects.get_or_create(user=request.user, post=post)
+        if not created:
+            like.delete()
+        return redirect('post_detail', pk=pk)
+ 
+ 
+class PostRepostView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        if post.author != request.user:
+            Repost.objects.get_or_create(user=request.user, post=post)
+        return redirect('post_detail', pk=pk)
+ 
+ 
+class CommentCreateView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.post = post
+            comment.author = request.user
+            parent_id = request.POST.get('parent_id')
+            if parent_id:
+                comment.parent = get_object_or_404(Comment, pk=parent_id)
+            comment.save()
+        return redirect('post_detail', pk=pk)
+ 
+ 
+class CommentDeleteView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        comment = get_object_or_404(Comment, pk=pk)
+        if comment.author == request.user or request.user.is_staff:
+            post_pk = comment.post_id
+            comment.delete()
+            return redirect('post_detail', pk=post_pk)
+        return redirect('feed')
+
+
 # ------------------
 class FeedView(LoginRequiredMixin, View):
     def get(self, request):
