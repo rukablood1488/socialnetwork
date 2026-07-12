@@ -29,21 +29,21 @@ profile_urls = [
 
 
 post_urls = [
-    #path('posts/create/', views.post_create, name='post_create'),
+    path('posts/create/', views.PostCreateView.as_view(), name='post_create'),
 
-    #path('posts/<int:pk>/', views.post_detail, name='post_detail'),
+    path('posts/<int:pk>/', views.PostDetailView.as_view(), name='post_detail'),
 
-    #path('posts/<int:pk>/edit/', views.post_edit, name='post_edit'),
+    path('posts/<int:pk>/edit/', views.PostEditView.as_view(), name='post_edit'),
 
-    #path('posts/<int:pk>/delete/', views.post_delete, name='post_delete'),
+    path('posts/<int:pk>/delete/', views.PostDeleteView.as_view(), name='post_delete'),
 
-    #path('posts/<int:pk>/like/', views.post_like, name='post_like'),
+    path('posts/<int:pk>/like/', views.PostLikeView.as_view(), name='post_like'),
 
-    #path('posts/<int:pk>/repost/', views.post_repost, name='post_repost'),
+    path('posts/<int:pk>/repost/', views.PostRepostView.as_view(), name='post_repost'),
 
-    #path('posts/<int:pk>/comment/', views.comment_create, name='comment_create'),
+    path('posts/<int:pk>/comment/', views.CommentCreateView.as_view(), name='comment_create'),
 
-    #path('posts/comment/<int:pk>/delete/', views.comment_delete, name='comment_delete'),
+    path('posts/comment/<int:pk>/delete/', views.CommentDeleteView.as_view(), name='comment_delete'),
 ]
 
 

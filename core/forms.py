@@ -2,6 +2,8 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 
+from .models import *
+
 
 class RegisterForm(forms.Form):
     username = forms.CharField(
@@ -132,3 +134,51 @@ class ProfileEditForm(forms.Form):
         profile.save()
  
         return user
+    
+
+class PostForm(forms.ModelForm):
+    class Meta:
+        model  = Post
+        fields = ['text', 'content_type', 'image', 'video', 'link']
+        labels = {
+            'text': 'Текст',
+            'content_type': 'Тип контенту',
+            'image': 'Зображення',
+            'video': 'Відео',
+            'link': 'Посилання',
+        }
+        widgets = {
+            'text': forms.Textarea(attrs={
+                'rows': 4,
+                'placeholder': 'Що у вас нового?',
+            }),
+            'link': forms.URLInput(attrs={
+                'placeholder': 'https://...',
+            }),
+            'content_type': forms.Select(),
+        }
+ 
+    def clean(self):
+        cleaned = super().clean()
+        content_type = cleaned.get('content_type')
+        if content_type == Post.ContentType.IMAGE and not cleaned.get('image'):
+            self.add_error('image', 'Додайте зображення для цього типу контенту.')
+        if content_type == Post.ContentType.VIDEO and not cleaned.get('video'):
+            self.add_error('video', 'Додайте відео для цього типу контенту.')
+        if content_type == Post.ContentType.LINK and not cleaned.get('link'):
+            self.add_error('link', 'Вкажіть посилання для цього типу контенту.')
+        return cleaned
+ 
+ 
+ 
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model  = Comment
+        fields = ['text']
+        labels = {'text': ''}
+        widgets = {
+            'text': forms.Textarea(attrs={
+                'rows': 2,
+                'placeholder': 'Написати коментар...',
+            }),
+        }
