@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Редагування публікації — SocialNet{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12 col-md-7">
+
+    <h1 class="h4 mb-4">Редагувати публікацію</h1>
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">
+        {% for error in form.non_field_errors %}
+          <div>{{ error }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+
+
+      <div class="mb-3">
+        <label for="{{ form.content_type.id_for_label }}" class="form-label">
+          {{ form.content_type.label }}
+        </label>
+        <select
+          name="{{ form.content_type.html_name }}"
+          id="{{ form.content_type.id_for_label }}"
+          class="form-select {% if form.content_type.errors %}is-invalid{% endif %}"
+        >
+          {% for value, label in form.fields.content_type.choices %}
+            <option value="{{ value }}"
+              {% if form.content_type.value == value %}selected{% endif %}>
+              {{ label }}
+            </option>
+          {% endfor %}
+        </select>
+        {% for error in form.content_type.errors %}
+          <div class="invalid-feedback">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+
+      <div class="mb-3">
+        <label for="{{ form.text.id_for_label }}" class="form-label">
+          {{ form.text.label }}
+        </label>
+        <textarea
+          name="{{ form.text.html_name }}"
+          id="{{ form.text.id_for_label }}"
+          rows="4"
+          class="form-control {% if form.text.errors %}is-invalid{% endif %}"
+        >{{ form.text.value|default:'' }}</textarea>
+        {% for error in form.text.errors %}
+          <div class="invalid-feedback">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+
+      <div class="mb-3">
+        <label for="{{ form.image.id_for_label }}" class="form-label">
+          {{ form.image.label }}
+        </label>
+        {% if post.image %}
+          <div class="mb-1">
+            <img src="{{ post.image.url }}"
+                 class="img-fluid rounded"
+                 style="max-height:120px;"
+                 alt="">
+            <div class="text-muted small">Поточне зображення</div>
+          </div>
+        {% endif %}
+        <input
+          type="file"
+          name="{{ form.image.html_name }}"
+          id="{{ form.image.id_for_label }}"
+          accept="image/*"
+          class="form-control {% if form.image.errors %}is-invalid{% endif %}"
+        >
+        {% for error in form.image.errors %}
+          <div class="invalid-feedback">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+
+      <div class="mb-3">
+        <label for="{{ form.video.id_for_label }}" class="form-label">
+          {{ form.video.label }}
+        </label>
+        {% if post.video %}
+          <div class="text-muted small mb-1">Поточне відео: {{ post.video.name }}</div>
+        {% endif %}
+        <input
+          type="file"
+          name="{{ form.video.html_name }}"
+          id="{{ form.video.id_for_label }}"
+          accept="video/*"
+          class="form-control {% if form.video.errors %}is-invalid{% endif %}"
+        >
+        {% for error in form.video.errors %}
+          <div class="invalid-feedback">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="mb-4">
+        <label for="{{ form.link.id_for_label }}" class="form-label">
+          {{ form.link.label }}
+        </label>
+        <input
+          type="url"
+          name="{{ form.link.html_name }}"
+          id="{{ form.link.id_for_label }}"
+          value="{{ form.link.value|default:'' }}"
+          class="form-control {% if form.link.errors %}is-invalid{% endif %}"
+          placeholder="https://..."
+        >
+        {% for error in form.link.errors %}
+          <div class="invalid-feedback">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Зберегти</button>
+        <a href="{% url 'post_detail' post.pk %}"
+           class="btn btn-outline-secondary">Скасувати</a>
+      </div>
+
+    </form>
+  </div>
+</div>
+{% endblock %}
