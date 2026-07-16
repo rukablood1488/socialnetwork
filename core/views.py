@@ -320,8 +320,43 @@ class CommentDeleteView(LoginRequiredMixin, View):
 
 # ------------------
 class FeedView(LoginRequiredMixin, View):
+    template_name = 'feed/index.html'
+
     def get(self, request):
-        return HttpResponse('Вітаємо, {}! Стрічка буде тут.'.format(request.user.username))
+        friendships = Friendship.objects.filter(
+            Q(sender=request.user) | Q(receiver=request.user),
+            status=Friendship.Status.ACCEPTED,
+        ).values_list('sender_id', 'receiver_id')
+        friend_ids = {uid for pair in friendships for uid in pair} - {request.user.id}
+
+        following_ids = set(
+            Subscription.objects.filter(
+                follower=request.user,
+            ).values_list('following_id', flat=True)
+        )
+
+        author_ids = friend_ids | following_ids | {request.user.id}
+        posts = Post.objects.filter(
+            author_id__in=author_ids,
+            group__isnull=True,
+        ).select_related(
+            'author',
+            'author__profile',
+        ).prefetch_related(
+            'likes',
+            'reposts',
+            'comments',
+        ).order_by('-created_at')
+
+ 
+        liked_ids = set(request.user.likes.values_list('post_id', flat=True))
+        reposted_ids = set(request.user.reposts.values_list('post_id', flat=True))
+
+        return render(request, self.template_name, {
+            'posts': posts,
+            'liked_ids': liked_ids,
+            'reposted_ids': reposted_ids,
+        })
 
 
 # ЗАГЛУШКИ
