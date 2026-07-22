@@ -50,13 +50,13 @@ post_urls = [
 friend_urls = [
     path('friends/', views.FriendsView.as_view(), name='friends'),
 
-    #path('friends/requests/', views.friend_requests, name='friend_requests'),
+    path('friends/requests/', views.FriendRequestsView.as_view(), name='friend_requests'),
 
     path('friends/request/<int:user_id>/', views.FriendRequestSendView.as_view(), name='friend_request_send'),
 
-    #path('friends/accept/<int:request_id>/', views.friend_request_accept, name='friend_request_accept'),
+    path('friends/accept/<int:request_id>/', views.FriendRequestAcceptView.as_view(), name='friend_request_accept'),
 
-    #path('friends/decline/<int:request_id>/', views.friend_request_decline, name='friend_request_decline'),
+    path('friends/decline/<int:request_id>/', views.FriendRequestDeclineView.as_view(), name='friend_request_decline'),
 
     path('friends/remove/<int:user_id>/', views.FriendRemoveView.as_view(), name='friend_remove'),
 
