@@ -359,36 +359,133 @@ class FeedView(LoginRequiredMixin, View):
         })
 
 
-# ЗАГЛУШКИ
+# ДРУЗІ ТА ПІДПИСКИ
 
 class FriendsView(LoginRequiredMixin, View):
+    template_name = 'friends/list.html'
+
     def get(self, request):
-        return HttpResponse('TODO: список друзів')
+        friendships = Friendship.objects.filter(
+            Q(sender=request.user) | Q(receiver=request.user),
+            status=Friendship.Status.ACCEPTED,
+        ).select_related('sender', 'receiver')
+
+        friends = [
+            f.receiver if f.sender == request.user else f.sender
+            for f in friendships
+        ]
+        return render(request, self.template_name, {'friends': friends})
 
 
-class FriendRequestSendView(LoginRequiredMixin, RedirectView):
-    def get_redirect_url(self, *args, **kwargs):
-        user = get_object_or_404(User, pk=kwargs['user_id'])
-        return reverse('profile', kwargs={'username': user.username})
+class FriendRequestsView(LoginRequiredMixin, View):
+    template_name = 'friends/requests.html'
+
+    def get(self, request):
+        pending = Friendship.objects.filter(
+            receiver=request.user,
+            status=Friendship.Status.PENDING,
+        ).select_related('sender', 'sender__profile')
+        return render(request, self.template_name, {'pending': pending})
 
 
-class FriendRemoveView(LoginRequiredMixin, RedirectView):
-    def get_redirect_url(self, *args, **kwargs):
-        user = get_object_or_404(User, pk=kwargs['user_id'])
-        return reverse('profile', kwargs={'username': user.username})
+class FriendRequestSendView(LoginRequiredMixin, View):
+    def post(self, request, user_id):
+        target = get_object_or_404(User, pk=user_id)
+        if target != request.user:
+            already_exists = Friendship.objects.filter(
+                Q(sender=request.user, receiver=target) |
+                Q(sender=target, receiver=request.user),
+            ).exists()
+            if not already_exists:
+                Friendship.objects.create(
+                    sender=request.user,
+                    receiver=target,
+                    status=Friendship.Status.PENDING,
+                )
+        return redirect('profile', username=target.username)
+
+    def get(self, request, user_id):
+        target = get_object_or_404(User, pk=user_id)
+        return redirect('profile', username=target.username)
 
 
-class SubscribeView(LoginRequiredMixin, RedirectView):
-    def get_redirect_url(self, *args, **kwargs):
-        user = get_object_or_404(User, pk=kwargs['user_id'])
-        return reverse('profile', kwargs={'username': user.username})
+class FriendRequestAcceptView(LoginRequiredMixin, View):
+    def post(self, request, request_id):
+        friendship = get_object_or_404(
+            Friendship,
+            pk=request_id,
+            receiver=request.user,
+            status=Friendship.Status.PENDING,
+        )
+        friendship.status = Friendship.Status.ACCEPTED
+        friendship.save()
+        return redirect('friend_requests')
+
+    def get(self, request, request_id):
+        return redirect('friend_requests')
 
 
-class UnsubscribeView(LoginRequiredMixin, RedirectView):
-    def get_redirect_url(self, *args, **kwargs):
-        user = get_object_or_404(User, pk=kwargs['user_id'])
-        return reverse('profile', kwargs={'username': user.username})
+class FriendRequestDeclineView(LoginRequiredMixin, View):
+    def post(self, request, request_id):
+        friendship = get_object_or_404(
+            Friendship,
+            pk=request_id,
+            receiver=request.user,
+            status=Friendship.Status.PENDING,
+        )
+        friendship.delete()
+        return redirect('friend_requests')
 
+    def get(self, request, request_id):
+        return redirect('friend_requests')
+
+
+class FriendRemoveView(LoginRequiredMixin, View):
+    def post(self, request, user_id):
+        target = get_object_or_404(User, pk=user_id)
+        Friendship.objects.filter(
+            Q(sender=request.user, receiver=target) |
+            Q(sender=target, receiver=request.user),
+            status=Friendship.Status.ACCEPTED,
+        ).delete()
+        return redirect('profile', username=target.username)
+
+    def get(self, request, user_id):
+        target = get_object_or_404(User, pk=user_id)
+        return redirect('profile', username=target.username)
+
+
+class SubscribeView(LoginRequiredMixin, View):
+    def post(self, request, user_id):
+        target = get_object_or_404(User, pk=user_id)
+        if target != request.user:
+            Subscription.objects.get_or_create(
+                follower=request.user,
+                following=target,
+            )
+        return redirect('profile', username=target.username)
+
+    def get(self, request, user_id):
+        target = get_object_or_404(User, pk=user_id)
+        return redirect('profile', username=target.username)
+
+
+class UnsubscribeView(LoginRequiredMixin, View):
+    def post(self, request, user_id):
+        target = get_object_or_404(User, pk=user_id)
+        Subscription.objects.filter(
+            follower=request.user,
+            following=target,
+        ).delete()
+        return redirect('profile', username=target.username)
+
+    def get(self, request, user_id):
+        target = get_object_or_404(User, pk=user_id)
+        return redirect('profile', username=target.username)
+    
+
+
+# ЗАГЛУШКИ
 
 class GroupListView(LoginRequiredMixin, View):
     def get(self, request):

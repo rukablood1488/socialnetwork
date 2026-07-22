@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Запити у друзі — SocialNet{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h4 mb-0">Вхідні запити у друзі</h1>
+  <a href="{% url 'friends' %}" class="btn btn-outline-secondary btn-sm">
+    ← До списку друзів
+  </a>
+</div>
+
+{% if pending %}
+  <div class="d-flex flex-column gap-3">
+    {% for friendship in pending %}
+      <div class="border rounded p-3 d-flex align-items-center gap-3">
+
+        {% if friendship.sender.profile.avatar %}
+          <img src="{{ friendship.sender.profile.avatar.url }}"
+               width="48" height="48"
+               class="rounded-circle flex-shrink-0"
+               style="object-fit:cover;" alt="">
+        {% else %}
+          <div class="rounded-circle bg-secondary d-flex align-items-center
+                      justify-content-center text-white flex-shrink-0"
+               style="width:48px;height:48px;">
+            {{ friendship.sender.username|first|upper }}
+          </div>
+        {% endif %}
+
+        <div class="flex-grow-1">
+          <a href="{% url 'profile' friendship.sender.username %}"
+             class="fw-semibold text-decoration-none">
+            {{ friendship.sender.get_full_name|default:friendship.sender.username }}
+          </a>
+          <div class="text-muted small">@{{ friendship.sender.username }}</div>
+          <div class="text-muted small">
+            {{ friendship.created_at|date:"d.m.Y H:i" }}
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 flex-shrink-0">
+          <form method="post" action="{% url 'friend_request_accept' friendship.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary btn-sm">
+              ✓ Прийняти
+            </button>
+          </form>
+
+          <form method="post" action="{% url 'friend_request_decline' friendship.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger btn-sm">
+              ✕ Відхилити
+            </button>
+          </form>
+        </div>
+
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="text-muted">Нових запитів немає.</p>
+{% endif %}
+
+{% endblock %}

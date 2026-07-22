@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Друзі — SocialNet{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h4 mb-0">Друзі</h1>
+  <a href="{% url 'friend_requests' %}" class="btn btn-outline-primary btn-sm">
+    Вхідні запити
+  </a>
+</div>
+
+{% if friends %}
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+    {% for friend in friends %}
+      <div class="col">
+        <div class="border rounded p-3 d-flex align-items-center gap-3">
+
+          {% if friend.profile.avatar %}
+            <img src="{{ friend.profile.avatar.url }}"
+                 width="48" height="48"
+                 class="rounded-circle flex-shrink-0"
+                 style="object-fit:cover;" alt="">
+          {% else %}
+            <div class="rounded-circle bg-secondary d-flex align-items-center
+                        justify-content-center text-white flex-shrink-0"
+                 style="width:48px;height:48px;">
+              {{ friend.username|first|upper }}
+            </div>
+          {% endif %}
+
+          <div class="flex-grow-1 min-width-0">
+            <a href="{% url 'profile' friend.username %}"
+               class="d-block fw-semibold text-decoration-none text-truncate">
+              {{ friend.get_full_name|default:friend.username }}
+            </a>
+            <span class="text-muted small">@{{ friend.username }}</span>
+          </div>
+
+          <form method="post"
+                action="{% url 'friend_remove' friend.pk %}"
+                class="flex-shrink-0">
+            {% csrf_token %}
+            <button type="submit"
+                    class="btn btn-outline-danger btn-sm"
+                    onclick="return confirm('Видалити з друзів?')">
+              ✕
+            </button>
+          </form>
+
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="text-muted">У вас ще немає друзів.</p>
+{% endif %}
+
+{% endblock %}
