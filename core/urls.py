@@ -69,17 +69,17 @@ friend_urls = [
 group_urls = [
     path('groups/', views.GroupListView.as_view(), name='group_list'),
 
-    #path('groups/create/', views.group_create, name='group_create'),
+    path('groups/create/', views.GroupCreateView.as_view(), name='group_create'),
 
-    #path('groups/<int:pk>/', views.group_detail, name='group_detail'),
+    path('groups/<int:pk>/', views.GroupDetailView.as_view(), name='group_detail'),
 
-    #path('groups/<int:pk>/edit/', views.group_edit, name='group_edit'),
+    path('groups/<int:pk>/edit/', views.GroupEditView.as_view(), name='group_edit'),
 
-    #path('groups/<int:pk>/delete/', views.group_delete, name='group_delete'),
+    path('groups/<int:pk>/delete/', views.GroupDeleteView.as_view(), name='group_delete'),
 
-    #path('groups/<int:pk>/join/', views.group_join, name='group_join'),
+    path('groups/<int:pk>/join/', views.GroupJoinView.as_view(), name='group_join'),
 
-    #path('groups/<int:pk>/leave/', views.group_leave, name='group_leave'),
+    path('groups/<int:pk>/leave/', views.GroupLeaveView.as_view(), name='group_leave'),
 
     #path('groups/<int:pk>/members/', views.group_members, name='group_members'),
 

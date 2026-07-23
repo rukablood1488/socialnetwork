@@ -182,3 +182,20 @@ class CommentForm(forms.ModelForm):
                 'placeholder': 'Написати коментар...',
             }),
         }
+
+
+class GroupForm(forms.ModelForm):
+    class Meta:
+        model = Group
+        fields = ['name', 'description', 'cover']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Назва групи',
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Опис групи',
+            }),
+        }
