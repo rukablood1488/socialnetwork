@@ -64,20 +64,7 @@
     Редагувати профіль
   </a>
 {% elif user.is_authenticated %}
-  <div class="d-flex gap-2 mb-3">
-    {% if is_friend %}
-      <form method="post" action="{% url 'friend_remove' profile_user.pk %}">
-        {% csrf_token %}
-        <button class="btn btn-outline-danger btn-sm">Видалити з друзів</button>
-      </form>
-    {% elif is_pending %}
-      <button class="btn btn-secondary btn-sm" disabled>Запит надіслано</button>
-    {% else %}
-      <form method="post" action="{% url 'friend_request_send' profile_user.pk %}">
-        {% csrf_token %}
-        <button class="btn btn-primary btn-sm">Додати в друзі</button>
-      </form>
-    {% endif %}
+  <div class="d-flex align-items-center gap-2 mb-3">
 
     {% if is_following %}
       <form method="post" action="{% url 'unsubscribe' profile_user.pk %}">
@@ -87,9 +74,14 @@
     {% else %}
       <form method="post" action="{% url 'subscribe' profile_user.pk %}">
         {% csrf_token %}
-        <button class="btn btn-outline-primary btn-sm">Підписатись</button>
+        <button class="btn btn-primary btn-sm">Підписатись</button>
       </form>
     {% endif %}
+
+    {% if is_friend %}
+      <span class="badge bg-success">🤝 Друзі</span>
+    {% endif %}
+
   </div>
 {% endif %}
 

@@ -6,11 +6,21 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.urls import reverse
 from django.views import View
-from django.views.generic import RedirectView
 
 from .models import *
 
 from .forms import *
+
+
+def get_friend_ids(user):
+
+    following_ids = set(
+        Subscription.objects.filter(follower=user).values_list('following_id', flat=True)
+    )
+    follower_ids = set(
+        Subscription.objects.filter(following=user).values_list('follower_id', flat=True)
+    )
+    return following_ids & follower_ids
 
 
 # АВТЕНТИФІКАЦІЯ
@@ -88,29 +98,21 @@ class ProfileView(View):
             group__isnull=True,
         ).order_by('-created_at')
 
-        friends_count = Friendship.objects.filter(
-            Q(sender=profile_user) | Q(receiver=profile_user),
-            status=Friendship.Status.ACCEPTED,
-        ).count()
+        friends_count = len(get_friend_ids(profile_user))
         followers_count = Subscription.objects.filter(following=profile_user).count()
         following_count = Subscription.objects.filter(follower=profile_user).count()
 
-        is_friend = is_pending = is_following = False
+        is_friend = is_following = False
         if request.user.is_authenticated and request.user != profile_user:
-            is_friend = Friendship.objects.filter(
-                Q(sender=request.user, receiver=profile_user) |
-                Q(sender=profile_user, receiver=request.user),
-                status=Friendship.Status.ACCEPTED,
-            ).exists()
-            is_pending = Friendship.objects.filter(
-                sender=request.user,
-                receiver=profile_user,
-                status=Friendship.Status.PENDING,
-            ).exists()
             is_following = Subscription.objects.filter(
                 follower=request.user,
                 following=profile_user,
             ).exists()
+            is_followed_back = Subscription.objects.filter(
+                follower=profile_user,
+                following=request.user,
+            ).exists()
+            is_friend = is_following and is_followed_back
 
         return render(request, 'profile/detail.html', {
             'profile_user': profile_user,
@@ -119,7 +121,6 @@ class ProfileView(View):
             'followers_count': followers_count,
             'following_count': following_count,
             'is_friend': is_friend,
-            'is_pending': is_pending,
             'is_following': is_following,
         })
 
@@ -150,15 +151,9 @@ class ProfileEditView(LoginRequiredMixin, View):
 class ProfileFriendsView(View):
     def get(self, request, username):
         profile_user = get_object_or_404(User, username=username)
-        friendships = Friendship.objects.filter(
-            Q(sender=profile_user) | Q(receiver=profile_user),
-            status=Friendship.Status.ACCEPTED,
-        ).select_related('sender', 'receiver')
+        friend_ids = get_friend_ids(profile_user)
+        friends = User.objects.filter(pk__in=friend_ids).select_related('profile')
 
-        friends = [
-            f.receiver if f.sender == profile_user else f.sender
-            for f in friendships
-        ]
         return render(request, 'profile/friends.html', {
             'profile_user': profile_user,
             'friends': friends,
@@ -224,10 +219,10 @@ class PostDetailView(View):
         ).select_related('author').prefetch_related('replies__author')
         comment_form = CommentForm()
  
-        user_liked    = False
+        user_liked = False
         user_reposted = False
         if request.user.is_authenticated:
-            user_liked    = post.likes.filter(user=request.user).exists()
+            user_liked = post.likes.filter(user=request.user).exists()
             user_reposted = post.reposts.filter(user=request.user).exists()
  
         return render(request, self.template_name, {
@@ -319,25 +314,13 @@ class CommentDeleteView(LoginRequiredMixin, View):
 
 
 # ------------------
+
 class FeedView(LoginRequiredMixin, View):
     template_name = 'feed/index.html'
 
     def get(self, request):
-        friendships = Friendship.objects.filter(
-            Q(sender=request.user) | Q(receiver=request.user),
-            status=Friendship.Status.ACCEPTED,
-        ).values_list('sender_id', 'receiver_id')
-        friend_ids = {uid for pair in friendships for uid in pair} - {request.user.id}
 
-        following_ids = set(
-            Subscription.objects.filter(
-                follower=request.user,
-            ).values_list('following_id', flat=True)
-        )
-
-        author_ids = friend_ids | following_ids | {request.user.id}
         posts = Post.objects.filter(
-            author_id__in=author_ids,
             group__isnull=True,
         ).select_related(
             'author',
@@ -348,7 +331,6 @@ class FeedView(LoginRequiredMixin, View):
             'comments',
         ).order_by('-created_at')
 
- 
         liked_ids = set(request.user.likes.values_list('post_id', flat=True))
         reposted_ids = set(request.user.reposts.values_list('post_id', flat=True))
 
@@ -365,88 +347,17 @@ class FriendsView(LoginRequiredMixin, View):
     template_name = 'friends/list.html'
 
     def get(self, request):
-        friendships = Friendship.objects.filter(
-            Q(sender=request.user) | Q(receiver=request.user),
-            status=Friendship.Status.ACCEPTED,
-        ).select_related('sender', 'receiver')
-
-        friends = [
-            f.receiver if f.sender == request.user else f.sender
-            for f in friendships
-        ]
+        friend_ids = get_friend_ids(request.user)
+        friends = User.objects.filter(pk__in=friend_ids).select_related('profile')
         return render(request, self.template_name, {'friends': friends})
-
-
-class FriendRequestsView(LoginRequiredMixin, View):
-    template_name = 'friends/requests.html'
-
-    def get(self, request):
-        pending = Friendship.objects.filter(
-            receiver=request.user,
-            status=Friendship.Status.PENDING,
-        ).select_related('sender', 'sender__profile')
-        return render(request, self.template_name, {'pending': pending})
-
-
-class FriendRequestSendView(LoginRequiredMixin, View):
-    def post(self, request, user_id):
-        target = get_object_or_404(User, pk=user_id)
-        if target != request.user:
-            already_exists = Friendship.objects.filter(
-                Q(sender=request.user, receiver=target) |
-                Q(sender=target, receiver=request.user),
-            ).exists()
-            if not already_exists:
-                Friendship.objects.create(
-                    sender=request.user,
-                    receiver=target,
-                    status=Friendship.Status.PENDING,
-                )
-        return redirect('profile', username=target.username)
-
-    def get(self, request, user_id):
-        target = get_object_or_404(User, pk=user_id)
-        return redirect('profile', username=target.username)
-
-
-class FriendRequestAcceptView(LoginRequiredMixin, View):
-    def post(self, request, request_id):
-        friendship = get_object_or_404(
-            Friendship,
-            pk=request_id,
-            receiver=request.user,
-            status=Friendship.Status.PENDING,
-        )
-        friendship.status = Friendship.Status.ACCEPTED
-        friendship.save()
-        return redirect('friend_requests')
-
-    def get(self, request, request_id):
-        return redirect('friend_requests')
-
-
-class FriendRequestDeclineView(LoginRequiredMixin, View):
-    def post(self, request, request_id):
-        friendship = get_object_or_404(
-            Friendship,
-            pk=request_id,
-            receiver=request.user,
-            status=Friendship.Status.PENDING,
-        )
-        friendship.delete()
-        return redirect('friend_requests')
-
-    def get(self, request, request_id):
-        return redirect('friend_requests')
 
 
 class FriendRemoveView(LoginRequiredMixin, View):
     def post(self, request, user_id):
         target = get_object_or_404(User, pk=user_id)
-        Friendship.objects.filter(
-            Q(sender=request.user, receiver=target) |
-            Q(sender=target, receiver=request.user),
-            status=Friendship.Status.ACCEPTED,
+        Subscription.objects.filter(
+            follower=request.user,
+            following=target,
         ).delete()
         return redirect('profile', username=target.username)
 
@@ -482,7 +393,6 @@ class UnsubscribeView(LoginRequiredMixin, View):
     def get(self, request, user_id):
         target = get_object_or_404(User, pk=user_id)
         return redirect('profile', username=target.username)
-    
 
 
 # ГРУПИ
