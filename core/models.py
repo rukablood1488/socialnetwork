@@ -225,76 +225,33 @@ class Repost(models.Model):
 # ДРУЗІ ТА ПІДПИСКИ
 
 
-class Friendship(models.Model):
-
-    class Status(models.TextChoices):
-        PENDING  = 'pending',  'Очікує підтвердження'
-        ACCEPTED = 'accepted', 'Прийнято'
-
-    sender = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='sent_friend_requests',
-        verbose_name='Відправник',
-    )
-    receiver = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='received_friend_requests',
-        verbose_name='Отримувач',
-    )
-    status = models.CharField(
-        max_length=10,
-        choices=Status.choices,
-        default=Status.PENDING,
-        verbose_name='Статус',
-    )
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата запиту',
-    )
-
-    class Meta:
-        verbose_name = 'Дружба'
-        verbose_name_plural = 'Дружба'
-        unique_together = ('sender', 'receiver')
-        ordering = ['-created_at']
-
-    def __str__(self):
-        return (
-            f'{self.sender.username} → {self.receiver.username} '
-            f'[{self.get_status_display()}]'
-        )
-
-
 class Subscription(models.Model):
-    
+
     follower = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='subscriptions',
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='subscriptions', 
         verbose_name='Підписник',
     )
     following = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='subscribers',
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='subscribers', 
         verbose_name='На кого підписаний',
     )
     created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата підписки',
+        auto_now_add=True, 
+        verbose_name='Дата підписки'
     )
-
+ 
     class Meta:
         verbose_name = 'Підписка'
         verbose_name_plural = 'Підписки'
         unique_together = ('follower', 'following')
         ordering = ['-created_at']
-
+ 
     def __str__(self):
         return f'{self.follower.username} стежить за {self.following.username}'
-
 
 
 # ГРУПИ ТА СПІЛЬНОТИ
@@ -473,64 +430,61 @@ class Message(models.Model):
 
 
 class Notification(models.Model):
-
     class NotificationType(models.TextChoices):
-        FRIEND_REQUEST = 'friend_request', 'Запит у друзі'
-        FRIEND_ACCEPT  = 'friend_accept',  'Запит прийнято'
-        LIKE           = 'like',           'Лайк'
-        COMMENT        = 'comment',        'Коментар'
-        REPOST         = 'repost',         'Репост'
-        MESSAGE        = 'message',        'Нове повідомлення'
-        GROUP_INVITE   = 'group_invite',   'Запрошення до групи'
-
+        LIKE = 'like', 'Лайк'
+        COMMENT = 'comment', 'Коментар'
+        REPOST = 'repost', 'Репост'
+        SUBSCRIBE = 'subscribe', 'Нова підписка'
+        MESSAGE = 'message', 'Нове повідомлення'
+        GROUP_INVITE = 'group_invite', 'Запрошення до групи'
+ 
     recipient = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='notifications',
-        verbose_name='Отримувач',
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='notifications', 
+        verbose_name='Отримувач'
     )
     sender = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
+        User, 
+        on_delete=models.CASCADE, 
         related_name='sent_notifications',
-        null=True,
-        blank=True,
+        null=True, 
+        blank=True, 
         verbose_name='Ініціатор події',
     )
     notification_type = models.CharField(
-        max_length=20,
-        choices=NotificationType.choices,
-        verbose_name='Тип сповіщення',
+        max_length=20, 
+        choices=NotificationType.choices, 
+        verbose_name='Тип сповіщення'
     )
-    
     post = models.ForeignKey(
-        Post,
-        on_delete=models.CASCADE,
-        null=True,
+        Post, 
+        on_delete=models.CASCADE, 
+        null=True, 
         blank=True,
-        related_name='notifications',
+        related_name='notifications', 
         verbose_name='Пов\'язана публікація',
     )
     text = models.CharField(
-        max_length=255,
-        blank=True,
-        default='',
-        verbose_name='Текст сповіщення',
+        max_length=255, 
+        blank=True, 
+        default='', 
+        verbose_name='Текст сповіщення'
     )
     is_read = models.BooleanField(
-        default=False,
-        verbose_name='Прочитано',
+        default=False, 
+        verbose_name='Прочитано'
     )
     created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата',
+        auto_now_add=True, 
+        verbose_name='Дата'
     )
-
+ 
     class Meta:
         verbose_name = 'Сповіщення'
         verbose_name_plural = 'Сповіщення'
         ordering = ['-created_at']
-
+ 
     def __str__(self):
         return f'[{self.get_notification_type_display()}] для {self.recipient.username}'
 
