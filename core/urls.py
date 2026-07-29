@@ -73,11 +73,11 @@ group_urls = [
 
     path('groups/<int:pk>/leave/', views.GroupLeaveView.as_view(), name='group_leave'),
 
-    #path('groups/<int:pk>/members/', views.group_members, name='group_members'),
+    path('groups/<int:pk>/members/', views.GroupMembersView.as_view(), name='group_members'),
 
-    #path('groups/<int:pk>/members/<int:user_id>/kick/', views.group_kick, name='group_kick'),
+    path('groups/<int:pk>/members/<int:user_id>/kick/', views.GroupKickView.as_view(), name='group_kick'),
 
-    #path('groups/<int:pk>/members/<int:user_id>/promote/', views.group_promote, name='group_promote'),
+    path('groups/<int:pk>/members/<int:user_id>/promote/', views.GroupPromoteView.as_view(), name='group_promote'),
 ]
 
 

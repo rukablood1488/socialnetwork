@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}{{ group.name }} — SocialNet{% endblock %}
+
+{% block content %}
+
+
+{% if group.cover %}
+  <img src="{{ group.cover.url }}"
+       alt=""
+       class="w-100 mb-3"
+       style="max-height:200px; object-fit:cover; border-radius:8px;">
+{% endif %}
+
+
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div>
+    <h1 class="h4 mb-1">{{ group.name }}</h1>
+    <p class="text-muted small mb-1">
+      Засновник:
+      <a href="{% url 'profile' group.creator.username %}" class="text-decoration-none">
+        {{ group.creator.username }}
+      </a>
+    </p>
+    <a href="{% url 'group_members' group.pk %}" class="text-decoration-none small">
+      👥 {{ members_count }} учасників
+    </a>
+  </div>
+
+ 
+  <div class="d-flex gap-2 flex-shrink-0">
+    {% if is_admin %}
+      <a href="{% url 'group_edit' group.pk %}" class="btn btn-outline-secondary btn-sm">
+        Редагувати
+      </a>
+    {% endif %}
+
+    {% if is_member %}
+      {% if group.creator_id != request.user.id %}
+        <form method="post" action="{% url 'group_leave' group.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-outline-danger btn-sm">
+            Вийти з групи
+          </button>
+        </form>
+      {% endif %}
+    {% else %}
+      <form method="post" action="{% url 'group_join' group.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary btn-sm">
+          Вступити
+        </button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+
+{% if group.description %}
+  <p class="mb-4">{{ group.description }}</p>
+{% endif %}
+
+<hr>
+
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="h5 mb-0">Публікації</h2>
+  {% if is_member %}
+    <a href="{% url 'post_create' %}?group={{ group.pk }}" class="btn btn-primary btn-sm">
+      + Нова публікація
+    </a>
+  {% endif %}
+</div>
+
+{% if posts %}
+  {% for post in posts %}
+    <div class="border rounded p-3 mb-3">
+
+      
+      <div class="d-flex align-items-center gap-2 mb-2">
+        {% if post.author.profile.avatar %}
+          <img src="{{ post.author.profile.avatar.url }}"
+               width="40" height="40"
+               class="rounded-circle flex-shrink-0"
+               style="object-fit:cover;" alt="">
+        {% else %}
+          <div class="rounded-circle bg-secondary d-flex align-items-center
+                      justify-content-center text-white flex-shrink-0"
+               style="width:40px;height:40px;">
+            {{ post.author.username|first|upper }}
+          </div>
+        {% endif %}
+
+        <div>
+          <a href="{% url 'profile' post.author.username %}"
+             class="fw-semibold text-decoration-none">
+            {{ post.author.get_full_name|default:post.author.username }}
+          </a>
+          <div class="text-muted small">{{ post.created_at|date:"d.m.Y H:i" }}</div>
+        </div>
+
+        {% if post.author == user or user.is_staff %}
+          <div class="ms-auto d-flex gap-1">
+            <a href="{% url 'post_edit' post.pk %}" class="btn btn-outline-secondary btn-sm">✏️</a>
+            <form method="post" action="{% url 'post_delete' post.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-danger btn-sm"
+                      onclick="return confirm('Видалити?')">🗑</button>
+            </form>
+          </div>
+        {% endif %}
+      </div>
+
+      {% if post.text %}
+        <p class="mb-2">{{ post.text }}</p>
+      {% endif %}
+
+      {% if post.image %}
+        <img src="{{ post.image.url }}" class="img-fluid rounded mb-2" alt="">
+      {% endif %}
+
+      {% if post.video %}
+        <video controls class="w-100 rounded mb-2">
+          <source src="{{ post.video.url }}">
+        </video>
+      {% endif %}
+
+      {% if post.link %}
+        <a href="{{ post.link }}" target="_blank" class="d-block small text-truncate mb-2">
+          {{ post.link }}
+        </a>
+      {% endif %}
+
+     
+      <div class="d-flex gap-2 pt-2 border-top">
+        <form method="post" action="{% url 'post_like' post.pk %}">
+          {% csrf_token %}
+          <button type="submit"
+                  class="btn btn-sm {% if post.pk in liked_ids %}btn-danger{% else %}btn-outline-danger{% endif %}">
+            ❤️ {{ post.likes.count }}
+          </button>
+        </form>
+
+        {% if post.author != user %}
+          <form method="post" action="{% url 'post_repost' post.pk %}">
+            {% csrf_token %}
+            <button type="submit"
+                    class="btn btn-sm {% if post.pk in reposted_ids %}btn-success{% else %}btn-outline-success{% endif %}">
+              🔁 {{ post.reposts.count }}
+            </button>
+          </form>
+        {% endif %}
+
+        <a href="{% url 'post_detail' post.pk %}" class="btn btn-sm btn-outline-secondary">
+          💬 {{ post.comments.count }}
+        </a>
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <p class="text-muted">У групі ще немає публікацій.</p>
+{% endif %}
+
+{% endblock %}

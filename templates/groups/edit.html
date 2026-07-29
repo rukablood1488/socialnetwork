@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Редагування групи — SocialNet{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12 col-md-7">
+
+    <h1 class="h4 mb-4">Редагувати групу</h1>
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">
+        {% for error in form.non_field_errors %}
+          <div>{{ error }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+
+     
+      <div class="mb-3">
+        <label for="{{ form.name.id_for_label }}" class="form-label">
+          {{ form.name.label }}
+        </label>
+        <input
+          type="text"
+          name="{{ form.name.html_name }}"
+          id="{{ form.name.id_for_label }}"
+          value="{{ form.name.value|default:'' }}"
+          class="form-control {% if form.name.errors %}is-invalid{% endif %}"
+        >
+        {% for error in form.name.errors %}
+          <div class="invalid-feedback">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      
+      <div class="mb-3">
+        <label for="{{ form.description.id_for_label }}" class="form-label">
+          {{ form.description.label }}
+        </label>
+        <textarea
+          name="{{ form.description.html_name }}"
+          id="{{ form.description.id_for_label }}"
+          rows="4"
+          class="form-control {% if form.description.errors %}is-invalid{% endif %}"
+        >{{ form.description.value|default:'' }}</textarea>
+        {% for error in form.description.errors %}
+          <div class="invalid-feedback">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      
+      <div class="mb-4">
+        <label for="{{ form.cover.id_for_label }}" class="form-label">
+          {{ form.cover.label }}
+        </label>
+        {% if group.cover %}
+          <div class="mb-1">
+            <img src="{{ group.cover.url }}"
+                 class="img-fluid rounded"
+                 style="max-height:120px;"
+                 alt="">
+            <div class="text-muted small">Поточна обкладинка</div>
+          </div>
+        {% endif %}
+        <input
+          type="file"
+          name="{{ form.cover.html_name }}"
+          id="{{ form.cover.id_for_label }}"
+          accept="image/*"
+          class="form-control {% if form.cover.errors %}is-invalid{% endif %}"
+        >
+        {% for error in form.cover.errors %}
+          <div class="invalid-feedback">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Зберегти</button>
+        <a href="{% url 'group_detail' group.pk %}" class="btn btn-outline-secondary">Скасувати</a>
+      </div>
+
+    </form>
+
+
+    {% if group.creator_id == request.user.id %}
+      <hr class="my-4">
+      <div class="border border-danger rounded p-3">
+        <h2 class="h6 text-danger">Небезпечна зона</h2>
+        <p class="small text-muted mb-2">
+          Видалення групи незворотне. Всі пости й учасники будуть втрачені.
+        </p>
+        <form method="post" action="{% url 'group_delete' group.pk %}">
+          {% csrf_token %}
+          <button type="submit"
+                  class="btn btn-outline-danger btn-sm"
+                  onclick="return confirm('Видалити групу назавжди?')">
+            Видалити групу
+          </button>
+        </form>
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}
