@@ -12,6 +12,7 @@
 </head>
 <body>
 
+  
   <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
     <div class="container">
       <a class="navbar-brand" href="{% url 'feed' %}">SocialNet</a>
@@ -26,6 +27,9 @@
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
               <a class="nav-link" href="{% url 'feed' %}">Стрічка</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'search' %}">Пошук</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'friends' %}">Друзі</a>
@@ -70,6 +74,7 @@
     </div>
   </nav>
 
+  
   {% if messages %}
     <div class="container mb-3">
       {% for message in messages %}
@@ -81,6 +86,7 @@
     </div>
   {% endif %}
 
+  
   <main class="container">
     {% block content %}{% endblock %}
   </main>
