@@ -195,18 +195,38 @@ class ProfileFollowingView(View):
 class PostCreateView(LoginRequiredMixin, View):
     template_name = 'posts/create.html'
  
+    def get_group(self, request, group_id):
+        if not group_id:
+            return None, None
+        group = get_object_or_404(Group, pk=group_id)
+        is_member = GroupMembership.objects.filter(group=group, user=request.user).exists()
+        if not is_member:
+            return None, redirect('group_detail', pk=group_id)
+        return group, None
+ 
     def get(self, request):
+        group, error = self.get_group(request, request.GET.get('group'))
+        if error:
+            return error
         form = PostForm()
-        return render(request, self.template_name, {'form': form})
+        return render(request, self.template_name, {'form': form, 'group': group})
  
     def post(self, request):
+        group, error = self.get_group(request, request.POST.get('group_id'))
+        if error:
+            return error
+ 
         form = PostForm(request.POST, request.FILES)
         if form.is_valid():
             post = form.save(commit=False)
             post.author = request.user
+            post.group = group
             post.save()
+            if group:
+                return redirect('group_detail', pk=group.pk)
             return redirect('post_detail', pk=post.pk)
-        return render(request, self.template_name, {'form': form})
+ 
+        return render(request, self.template_name, {'form': form, 'group': group})
  
  
 class PostDetailView(View):
@@ -555,6 +575,70 @@ class GroupLeaveView(LoginRequiredMixin, View):
     def get(self, request, pk):
         return redirect('group_detail', pk=pk)
 
+
+
+class GroupMembersView(View):
+    template_name = 'groups/members.html'
+ 
+    def get(self, request, pk):
+        group = get_object_or_404(Group, pk=pk)
+        memberships = GroupMembership.objects.filter(
+            group=group,
+        ).select_related('user', 'user__profile').order_by('role', 'joined_at')
+ 
+        is_admin = is_creator = False
+        if request.user.is_authenticated:
+            is_admin = GroupMembership.objects.filter(
+                group=group,
+                user=request.user,
+                role=GroupMembership.Role.ADMIN,
+            ).exists()
+            is_creator = group.creator_id == request.user.id
+ 
+        return render(request, self.template_name, {
+            'group': group,
+            'memberships': memberships,
+            'is_admin': is_admin,
+            'is_creator': is_creator,
+        })
+ 
+ 
+class GroupKickView(LoginRequiredMixin, View):
+    def post(self, request, pk, user_id):
+        group = get_object_or_404(Group, pk=pk)
+ 
+        is_admin = GroupMembership.objects.filter(
+            group=group,
+            user=request.user,
+            role=GroupMembership.Role.ADMIN,
+        ).exists()
+ 
+        if is_admin:
+            target = get_object_or_404(User, pk=user_id)
+            if target.id != group.creator_id:
+                GroupMembership.objects.filter(group=group, user=target).delete()
+ 
+        return redirect('group_members', pk=pk)
+ 
+    def get(self, request, pk, user_id):
+        return redirect('group_members', pk=pk)
+ 
+ 
+class GroupPromoteView(LoginRequiredMixin, View):
+    def post(self, request, pk, user_id):
+        group = get_object_or_404(Group, pk=pk)
+ 
+        if group.creator_id == request.user.id:
+            target = get_object_or_404(User, pk=user_id)
+            GroupMembership.objects.filter(
+                group=group,
+                user=target,
+            ).update(role=GroupMembership.Role.ADMIN)
+ 
+        return redirect('group_members', pk=pk)
+ 
+    def get(self, request, pk, user_id):
+        return redirect('group_members', pk=pk)
 
 
 # ЗАГЛУШКИ

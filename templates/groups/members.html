@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Учасники {{ group.name }} — SocialNet{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h4 mb-1">Учасники групи</h1>
+    <a href="{% url 'group_detail' group.pk %}" class="text-decoration-none small">
+      ← {{ group.name }}
+    </a>
+  </div>
+</div>
+
+{% if memberships %}
+  <div class="d-flex flex-column gap-2">
+    {% for membership in memberships %}
+      <div class="border rounded p-3 d-flex align-items-center gap-3">
+
+        {% if membership.user.profile.avatar %}
+          <img src="{{ membership.user.profile.avatar.url }}"
+               width="44" height="44"
+               class="rounded-circle flex-shrink-0"
+               style="object-fit:cover;" alt="">
+        {% else %}
+          <div class="rounded-circle bg-secondary d-flex align-items-center
+                      justify-content-center text-white flex-shrink-0"
+               style="width:44px;height:44px;">
+            {{ membership.user.username|first|upper }}
+          </div>
+        {% endif %}
+
+        <div class="flex-grow-1 min-width-0">
+          <a href="{% url 'profile' membership.user.username %}"
+             class="fw-semibold text-decoration-none d-block text-truncate">
+            {{ membership.user.get_full_name|default:membership.user.username }}
+          </a>
+          <span class="text-muted small">@{{ membership.user.username }}</span>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 flex-shrink-0">
+          {% if membership.user_id == group.creator_id %}
+            <span class="badge bg-warning text-dark">👑 Засновник</span>
+          {% elif membership.role == 'admin' %}
+            <span class="badge bg-primary">Адміністратор</span>
+          {% endif %}
+
+          {% if is_creator and membership.user_id != group.creator_id and membership.role != 'admin' %}
+            <form method="post" action="{% url 'group_promote' group.pk membership.user_id %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-primary btn-sm">
+                Зробити адміном
+              </button>
+            </form>
+          {% endif %}
+
+          {% if is_admin and membership.user_id != group.creator_id %}
+            <form method="post" action="{% url 'group_kick' group.pk membership.user_id %}">
+              {% csrf_token %}
+              <button type="submit"
+                      class="btn btn-outline-danger btn-sm"
+                      onclick="return confirm('Виключити учасника з групи?')">
+                Виключити
+              </button>
+            </form>
+          {% endif %}
+        </div>
+
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="text-muted">У групі ще немає учасників.</p>
+{% endif %}
+
+{% endblock %}
