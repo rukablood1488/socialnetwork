@@ -1,0 +1,75 @@
+{% if not query %}
+  <p class="text-muted text-center py-4">Почніть вводити, щоб знайти користувачів або групи.</p>
+
+{% elif not users and not groups %}
+  <p class="text-muted text-center py-4">
+    Нічого не знайдено за запитом «{{ query }}».
+  </p>
+
+{% else %}
+
+  
+  {% if users %}
+    <h2 class="h6 text-muted mb-2">Користувачі</h2>
+    <div class="d-flex flex-column gap-2 mb-4">
+      {% for u in users %}
+        <a href="{% url 'profile' u.username %}"
+           class="border rounded p-2 d-flex align-items-center gap-3 text-decoration-none text-body">
+
+          {% if u.profile.avatar %}
+            <img src="{{ u.profile.avatar.url }}"
+                 width="44" height="44"
+                 class="rounded-circle flex-shrink-0"
+                 style="object-fit:cover;" alt="">
+          {% else %}
+            <div class="rounded-circle bg-secondary d-flex align-items-center
+                        justify-content-center text-white flex-shrink-0"
+                 style="width:44px;height:44px;">
+              {{ u.username|first|upper }}
+            </div>
+          {% endif %}
+
+          <div class="min-width-0">
+            <div class="fw-semibold text-truncate">
+              {{ u.get_full_name|default:u.username }}
+            </div>
+            <div class="text-muted small">@{{ u.username }}</div>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  
+  {% if groups %}
+    <h2 class="h6 text-muted mb-2">Групи</h2>
+    <div class="d-flex flex-column gap-2">
+      {% for group in groups %}
+        <a href="{% url 'group_detail' group.pk %}"
+           class="border rounded p-2 d-flex align-items-center gap-3 text-decoration-none text-body">
+
+          {% if group.cover %}
+            <img src="{{ group.cover.url }}"
+                 width="44" height="44"
+                 class="rounded flex-shrink-0"
+                 style="object-fit:cover;" alt="">
+          {% else %}
+            <div class="rounded bg-secondary-subtle d-flex align-items-center
+                        justify-content-center flex-shrink-0"
+                 style="width:44px;height:44px;">
+              🏘
+            </div>
+          {% endif %}
+
+          <div class="min-width-0">
+            <div class="fw-semibold text-truncate">{{ group.name }}</div>
+            <div class="text-muted small">
+              {{ group.memberships.count }} учасників
+            </div>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+{% endif %}

@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .urls_search import search_urls
 
 
 feed_urls = [
@@ -117,4 +118,5 @@ urlpatterns = (
     + group_urls
     + chat_urls
     + notification_urls
+    + search_urls
 )

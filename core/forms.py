@@ -85,7 +85,6 @@ class ProfileEditForm(forms.Form):
         required=False,
         widget=forms.EmailInput(attrs={'placeholder': 'ivan@example.com'}),
     )
- 
     bio = forms.CharField(
         label='Біографія',
         required=False,
@@ -96,14 +95,8 @@ class ProfileEditForm(forms.Form):
         required=False,
         widget=forms.DateInput(attrs={'type': 'date'}),
     )
-    avatar = forms.ImageField(
-        label='Аватар',
-        required=False,
-    )
-    cover = forms.ImageField(
-        label='Обкладинка',
-        required=False,
-    )
+    avatar = forms.ImageField(label='Аватар', required=False)
+    cover  = forms.ImageField(label='Обкладинка', required=False)
  
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -118,21 +111,19 @@ class ProfileEditForm(forms.Form):
  
     def save(self, user):
         data = self.cleaned_data
- 
         user.first_name = data.get('first_name', '')
         user.last_name = data.get('last_name', '')
         user.email = data.get('email', '')
         user.save()
  
-        profile = user.profile
-        profile.bio = data.get('bio', '')
+        profile, _created = UserProfile.objects.get_or_create(user=user)
+        profile.bio        = data.get('bio', '')
         profile.birth_date = data.get('birth_date') or None
         if data.get('avatar'):
             profile.avatar = data['avatar']
         if data.get('cover'):
             profile.cover = data['cover']
         profile.save()
- 
         return user
     
 
