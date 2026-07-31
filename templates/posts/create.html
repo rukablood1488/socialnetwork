@@ -1,18 +1,11 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Нова публікація — SocialNet{% endblock %}
 
 {% block content %}
-<div class="row">
+<div class="row justify-content-center">
   <div class="col-12 col-md-7">
-
-    <h1 class="h4 mb-4">
-      {% if group %}
-        Нова публікація у групі «{{ group.name }}»
-      {% else %}
-        Нова публікація
-      {% endif %}
-    </h1>
 
     {% if form.non_field_errors %}
       <div class="alert alert-danger">
@@ -22,113 +15,125 @@
       </div>
     {% endif %}
 
-    <form method="post" enctype="multipart/form-data" novalidate>
+    <form method="post" enctype="multipart/form-data" novalidate id="post-create-form">
       {% csrf_token %}
       {% if group %}
         <input type="hidden" name="group_id" value="{{ group.pk }}">
       {% endif %}
 
-      
-      <div class="mb-3">
-        <label for="{{ form.content_type.id_for_label }}" class="form-label">
-          {{ form.content_type.label }}
-        </label>
-        <select
-          name="{{ form.content_type.html_name }}"
-          id="{{ form.content_type.id_for_label }}"
-          class="form-select {% if form.content_type.errors %}is-invalid{% endif %}"
-        >
-          {% for value, label in form.fields.content_type.choices %}
-            <option value="{{ value }}"
-              {% if form.content_type.value == value %}selected{% endif %}>
-              {{ label }}
-            </option>
-          {% endfor %}
-        </select>
-        {% for error in form.content_type.errors %}
-          <div class="invalid-feedback">{{ error }}</div>
-        {% endfor %}
-      </div>
+  
+      <div id="step1">
+        <h1 class="h4 mb-3">
+          {% if group %}
+            Нова публікація у групі «{{ group.name }}»
+          {% else %}
+            Створити публікацію
+          {% endif %}
+        </h1>
 
-    
-      <div class="mb-3">
-        <label for="{{ form.text.id_for_label }}" class="form-label">
-          {{ form.text.label }}
-        </label>
-        <textarea
-          name="{{ form.text.html_name }}"
-          id="{{ form.text.id_for_label }}"
-          rows="4"
-          class="form-control {% if form.text.errors %}is-invalid{% endif %}"
-          placeholder="Що у вас нового?"
-        >{{ form.text.value|default:'' }}</textarea>
-        {% for error in form.text.errors %}
-          <div class="invalid-feedback">{{ error }}</div>
-        {% endfor %}
-      </div>
+        <div class="border rounded p-4 text-center mb-3" style="background:var(--bs-tertiary-bg, #f8f9fa);">
+          <div id="media-preview" class="mb-3"></div>
 
-      
-      <div class="mb-3">
-        <label for="{{ form.image.id_for_label }}" class="form-label">
-          {{ form.image.label }}
-        </label>
-        <input
-          type="file"
-          name="{{ form.image.html_name }}"
-          id="{{ form.image.id_for_label }}"
-          accept="image/*"
-          class="form-control {% if form.image.errors %}is-invalid{% endif %}"
-        >
-        {% for error in form.image.errors %}
-          <div class="invalid-feedback">{{ error }}</div>
-        {% endfor %}
-      </div>
+          <label for="media-input" class="btn btn-outline-primary">
+            Обрати фото або відео
+          </label>
 
-      
-      <div class="mb-3">
-        <label for="{{ form.video.id_for_label }}" class="form-label">
-          {{ form.video.label }}
-        </label>
-        <input
-          type="file"
-          name="{{ form.video.html_name }}"
-          id="{{ form.video.id_for_label }}"
-          accept="video/*"
-          class="form-control {% if form.video.errors %}is-invalid{% endif %}"
-        >
-        {% for error in form.video.errors %}
-          <div class="invalid-feedback">{{ error }}</div>
-        {% endfor %}
-      </div>
 
-      
-      <div class="mb-4">
-        <label for="{{ form.link.id_for_label }}" class="form-label">
-          {{ form.link.label }}
-        </label>
-        <input
-          type="url"
-          name="{{ form.link.html_name }}"
-          id="{{ form.link.id_for_label }}"
-          value="{{ form.link.value|default:'' }}"
-          class="form-control {% if form.link.errors %}is-invalid{% endif %}"
-          placeholder="https://..."
-        >
-        {% for error in form.link.errors %}
-          <div class="invalid-feedback">{{ error }}</div>
-        {% endfor %}
-      </div>
+          <input
+            type="file"
+            id="media-input"
+            accept="image/*,video/*"
+            class="d-none"
+            data-image-input="{{ form.image.id_for_label }}"
+            data-video-input="{{ form.video.id_for_label }}"
+          >
 
-      <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary">Опублікувати</button>
-        {% if group %}
-          <a href="{% url 'group_detail' group.pk %}" class="btn btn-outline-secondary">Скасувати</a>
-        {% else %}
-          <a href="{% url 'feed' %}" class="btn btn-outline-secondary">Скасувати</a>
+          <input
+            type="file"
+            name="{{ form.image.html_name }}"
+            id="{{ form.image.id_for_label }}"
+            class="d-none"
+          >
+          <input
+            type="file"
+            name="{{ form.video.html_name }}"
+            id="{{ form.video.id_for_label }}"
+            class="d-none"
+          >
+
+          <p class="text-muted small mt-2 mb-0">
+            Оберіть одне фото АБО одне відео
+          </p>
+        </div>
+
+        {% if form.image.errors or form.video.errors %}
+          <div class="alert alert-danger">
+            {% for error in form.image.errors %}<div>{{ error }}</div>{% endfor %}
+            {% for error in form.video.errors %}<div>{{ error }}</div>{% endfor %}
+          </div>
         {% endif %}
+
+        <button type="button" id="btn-next" class="btn btn-primary w-100" disabled>
+          Далі
+        </button>
+
+        <a href="{% if group %}{% url 'group_detail' group.pk %}{% else %}{% url 'feed' %}{% endif %}"
+           class="btn btn-link w-100 mt-1 text-muted">
+          Скасувати
+        </a>
+      </div>
+
+  
+
+
+      <div id="step2" class="d-none">
+        <h1 class="h4 mb-3">Новий підпис</h1>
+
+        <div id="media-preview-step2" class="mb-3"></div>
+
+        <div class="mb-3 position-relative">
+          <label for="{{ form.text.id_for_label }}" class="form-label">
+            {{ form.text.label }}
+          </label>
+          <textarea
+            name="{{ form.text.html_name }}"
+            id="caption-input"
+            rows="3"
+            class="form-control {% if form.text.errors %}is-invalid{% endif %}"
+            placeholder="Напишіть підпис... Згадайте когось через @"
+            data-mention-url="{% url 'mention_suggest' %}"
+          >{{ form.text.value|default:'' }}</textarea>
+
+          <div id="mention-dropdown"
+               class="list-group position-absolute w-100 d-none"
+               style="z-index:1000; max-height:220px; overflow-y:auto;"></div>
+
+          {% for error in form.text.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Поділитися</button>
+        <button type="button" id="btn-back" class="btn btn-link w-100 mt-1 text-muted">
+          ← Назад до вибору медіа
+        </button>
       </div>
 
     </form>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'js/post_create.js' %}"></script>
+  <script>
+    document.getElementById('media-input').addEventListener('change', function () {
+      const source = document.getElementById('media-preview');
+      const target = document.getElementById('media-preview-step2');
+      
+      setTimeout(function () {
+        target.innerHTML = source.innerHTML;
+      }, 0);
+    });
+  </script>
 {% endblock %}

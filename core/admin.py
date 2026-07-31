@@ -12,12 +12,11 @@ class UserProfileAdmin(admin.ModelAdmin):
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-    list_display = ('id', 'author', 'content_type', 'group', 'created_at')
-    list_filter = ('content_type', 'created_at')
+    list_display = ('id', 'author', 'group', 'created_at')
+    list_filter = ('created_at',)
     search_fields = ('author__username', 'text')
     raw_id_fields = ('author', 'group')
     date_hierarchy = 'created_at'
-
 
 @admin.register(Like)
 class LikeAdmin(admin.ModelAdmin):

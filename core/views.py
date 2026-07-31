@@ -269,14 +269,14 @@ class PostEditView(LoginRequiredMixin, View):
         post, error = self.get_post(request, pk)
         if error:
             return error
-        form = PostForm(instance=post)
+        form = PostCaptionEditForm(instance=post)
         return render(request, self.template_name, {'form': form, 'post': post})
  
     def post(self, request, pk):
         post, error = self.get_post(request, pk)
         if error:
             return error
-        form = PostForm(request.POST, request.FILES, instance=post)
+        form = PostCaptionEditForm(request.POST, instance=post)
         if form.is_valid():
             form.save()
             return redirect('post_detail', pk=post.pk)
