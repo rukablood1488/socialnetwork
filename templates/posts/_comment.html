@@ -1,3 +1,5 @@
+{% load mention_filters %}
+
 <div class="mb-3 {% if depth > 0 %}ms-4 border-start ps-3{% endif %}">
   <div class="d-flex align-items-start gap-2">
 
@@ -25,7 +27,6 @@
           {{ comment.created_at|date:"d.m.Y H:i" }}
         </span>
 
-
         {% if user == comment.author or user.is_staff %}
           <form method="post"
                 action="{% url 'comment_delete' comment.pk %}"
@@ -40,9 +41,7 @@
         {% endif %}
       </div>
 
-
-      <p class="mb-1 small">{{ comment.text }}</p>
-
+      <p class="mb-1 small">{{ comment.text|linkify_mentions }}</p>
 
       {% if user.is_authenticated and depth == 0 %}
         <button
@@ -72,7 +71,6 @@
       {% endif %}
     </div>
   </div>
-
 
   {% if comment.replies.all and depth == 0 %}
     <div class="mt-2">

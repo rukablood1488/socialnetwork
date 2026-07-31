@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 from .urls_search import search_urls
+from .urls_mentions import mention_urls
 
 
 feed_urls = [
@@ -119,4 +120,5 @@ urlpatterns = (
     + chat_urls
     + notification_urls
     + search_urls
+    + mention_urls
 )

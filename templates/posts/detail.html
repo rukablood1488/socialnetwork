@@ -1,80 +1,138 @@
 {% extends "base.html" %}
+{% load static %}
+{% load mention_filters %}
 
 {% block title %}Публікація #{{ post.pk }} — SocialNet{% endblock %}
 
+{% block extra_css %}
+<style>
+  .post-media-col {
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    max-height: 80vh;
+    border-radius: 8px 0 0 8px;
+    overflow: hidden;
+  }
+  .post-media-col img,
+  .post-media-col video {
+    max-width: 100%;
+    max-height: 80vh;
+    width: 100%;
+    object-fit: contain;
+  }
+  .post-side-col {
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
+    border-radius: 0 8px 8px 0;
+  }
+  .post-comments-scroll {
+    overflow-y: auto;
+    flex: 1 1 auto;
+  }
+  @media (max-width: 767px) {
+    .post-media-col, .post-side-col {
+      border-radius: 8px;
+      max-height: none;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row">
-  <div class="col-12 col-md-8">
+<div class="row border rounded overflow-hidden g-0">
 
+  {# ЛІВА КОЛОНКА #}
+  <div class="col-12 col-md-7 post-media-col">
+    {% if post.media_type == 'video' %}
+      <video controls autoplay muted loop>
+        <source src="{{ post.video.url }}">
+      </video>
+    {% else %}
+      <img src="{{ post.image.url }}" alt="">
+    {% endif %}
+  </div>
 
-    <div class="border rounded p-3 mb-4">
+  {# ПРАВА КОЛОНКА #}
+  <div class="col-12 col-md-5 post-side-col bg-body">
 
-      <div class="d-flex align-items-center gap-2 mb-3">
-        {% if post.author.profile.avatar %}
-          <img src="{{ post.author.profile.avatar.url }}"
-               width="40" height="40"
-               class="rounded-circle"
-               style="object-fit:cover;"
-               alt="">
-        {% else %}
-          <div class="rounded-circle bg-secondary d-flex align-items-center
-                      justify-content-center text-white flex-shrink-0"
-               style="width:40px;height:40px;">
-            {{ post.author.username|first|upper }}
-          </div>
-        {% endif %}
-        <div>
-          <a href="{% url 'profile' post.author.username %}"
-             class="fw-semibold text-decoration-none">
-            {{ post.author.get_full_name|default:post.author.username }}
-          </a>
-          <div class="text-muted small">{{ post.created_at|date:"d.m.Y H:i" }}</div>
+    <div class="d-flex align-items-center gap-2 p-3 border-bottom">
+      {% if post.author.profile.avatar %}
+        <img src="{{ post.author.profile.avatar.url }}"
+             width="36" height="36"
+             class="rounded-circle flex-shrink-0"
+             style="object-fit:cover;" alt="">
+      {% else %}
+        <div class="rounded-circle bg-secondary d-flex align-items-center
+                    justify-content-center text-white flex-shrink-0"
+             style="width:36px;height:36px;">
+          {{ post.author.username|first|upper }}
         </div>
+      {% endif %}
 
-        {% if user == post.author or user.is_staff %}
-          <div class="ms-auto d-flex gap-2">
-            <a href="{% url 'post_edit' post.pk %}"
-               class="btn btn-outline-secondary btn-sm">Редагувати</a>
-            <form method="post" action="{% url 'post_delete' post.pk %}">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-outline-danger btn-sm"
-                      onclick="return confirm('Видалити публікацію?')">
-                Видалити
-              </button>
-            </form>
-          </div>
-        {% endif %}
-      </div>
+      <a href="{% url 'profile' post.author.username %}"
+         class="fw-semibold text-decoration-none">
+        {{ post.author.username }}
+      </a>
 
+      {% if post.author == user or user.is_staff %}
+        <div class="ms-auto d-flex gap-1">
+          <a href="{% url 'post_edit' post.pk %}" class="btn btn-outline-secondary btn-sm">✏️</a>
+          <form method="post" action="{% url 'post_delete' post.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger btn-sm"
+                    onclick="return confirm('Видалити публікацію?')">🗑</button>
+          </form>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="post-comments-scroll p-3">
 
       {% if post.text %}
-        <p class="mb-3">{{ post.text }}</p>
+        <div class="d-flex align-items-start gap-2 mb-3">
+          {% if post.author.profile.avatar %}
+            <img src="{{ post.author.profile.avatar.url }}"
+                 width="32" height="32"
+                 class="rounded-circle flex-shrink-0"
+                 style="object-fit:cover;" alt="">
+          {% else %}
+            <div class="rounded-circle bg-secondary d-flex align-items-center
+                        justify-content-center text-white flex-shrink-0"
+                 style="width:32px;height:32px;font-size:0.8rem;">
+              {{ post.author.username|first|upper }}
+            </div>
+          {% endif %}
+          <div class="small">
+            <a href="{% url 'profile' post.author.username %}"
+               class="fw-semibold text-decoration-none me-1">
+              {{ post.author.username }}
+            </a>
+            {{ post.text|linkify_mentions|linebreaksbr }}
+            <div class="text-muted" style="font-size:0.75rem;">
+              {{ post.created_at|date:"d.m.Y H:i" }}
+            </div>
+          </div>
+        </div>
+        <hr>
       {% endif %}
 
-
-      {% if post.image %}
-        <img src="{{ post.image.url }}"
-             class="img-fluid rounded mb-3"
-             alt="">
+      {% if comments %}
+        {% for comment in comments %}
+          {% include "posts/_comment.html" with comment=comment depth=0 %}
+        {% endfor %}
+      {% else %}
+        <p class="text-muted small text-center py-3">
+          Коментарів ще немає. Будьте першим!
+        </p>
       {% endif %}
+    </div>
 
-
-      {% if post.video %}
-        <video controls class="w-100 rounded mb-3">
-          <source src="{{ post.video.url }}">
-        </video>
-      {% endif %}
-
-
-      {% if post.link %}
-        <a href="{{ post.link }}" target="_blank"
-           class="d-block text-truncate mb-3 small">
-          {{ post.link }}
-        </a>
-      {% endif %}
-
-      <div class="d-flex gap-3 pt-2 border-top">
-
+    <div class="border-top p-3">
+      <div class="d-flex gap-2 mb-2">
 
         {% if user.is_authenticated %}
           <form method="post" action="{% url 'post_like' post.pk %}">
@@ -103,37 +161,22 @@
         <span class="btn btn-sm btn-outline-secondary disabled">
           💬 {{ post.comments.count }}
         </span>
-
       </div>
-    </div>
 
-
-    {% if user.is_authenticated %}
-      <div class="mb-4">
-        <h2 class="h6 mb-2">Залишити коментар</h2>
-        <form method="post" action="{% url 'comment_create' post.pk %}">
+      {% if user.is_authenticated %}
+        <form method="post" action="{% url 'comment_create' post.pk %}" class="d-flex gap-2">
           {% csrf_token %}
-          <textarea
+          <input
+            type="text"
             name="text"
-            rows="2"
-            class="form-control mb-2"
-            placeholder="Написати коментар..."
-          ></textarea>
-          <button type="submit" class="btn btn-primary btn-sm">Відправити</button>
+            class="form-control form-control-sm"
+            placeholder="Додати коментар..."
+            required
+          >
+          <button type="submit" class="btn btn-primary btn-sm">➤</button>
         </form>
-      </div>
-    {% endif %}
-
-
-    <h2 class="h6 mb-3">Коментарі ({{ post.comments.count }})</h2>
-
-    {% if comments %}
-      {% for comment in comments %}
-        {% include "posts/_comment.html" with comment=comment depth=0 %}
-      {% endfor %}
-    {% else %}
-      <p class="text-muted small">Коментарів ще немає. Будьте першим!</p>
-    {% endif %}
+      {% endif %}
+    </div>
 
   </div>
 </div>

@@ -129,36 +129,44 @@ class ProfileEditForm(forms.Form):
 
 class PostForm(forms.ModelForm):
     class Meta:
-        model  = Post
-        fields = ['text', 'content_type', 'image', 'video', 'link']
+        model = Post
+        fields = ['image', 'video', 'text']
         labels = {
-            'text': 'Текст',
-            'content_type': 'Тип контенту',
             'image': 'Зображення',
             'video': 'Відео',
-            'link': 'Посилання',
+            'text':  'Підпис',
         }
         widgets = {
             'text': forms.Textarea(attrs={
-                'rows': 4,
-                'placeholder': 'Що у вас нового?',
+                'rows': 3,
+                'placeholder': 'Напишіть підпис... Згадайте когось через @',
             }),
-            'link': forms.URLInput(attrs={
-                'placeholder': 'https://...',
-            }),
-            'content_type': forms.Select(),
         }
  
     def clean(self):
         cleaned = super().clean()
-        content_type = cleaned.get('content_type')
-        if content_type == Post.ContentType.IMAGE and not cleaned.get('image'):
-            self.add_error('image', 'Додайте зображення для цього типу контенту.')
-        if content_type == Post.ContentType.VIDEO and not cleaned.get('video'):
-            self.add_error('video', 'Додайте відео для цього типу контенту.')
-        if content_type == Post.ContentType.LINK and not cleaned.get('link'):
-            self.add_error('link', 'Вкажіть посилання для цього типу контенту.')
+        image = cleaned.get('image')
+        video = cleaned.get('video')
+ 
+        if not image and not video:
+            raise forms.ValidationError('Додайте фото або відео — публікація без медіа неможлива.')
+        if image and video:
+            raise forms.ValidationError('Оберіть лише одне: фото АБО відео, не обидва одразу.')
+ 
         return cleaned
+ 
+ 
+class PostCaptionEditForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ['text']
+        labels = {'text': 'Підпис'}
+        widgets = {
+            'text': forms.Textarea(attrs={
+                'rows': 3,
+                'placeholder': 'Підпис... Згадайте когось через @',
+            }),
+        }
  
  
  

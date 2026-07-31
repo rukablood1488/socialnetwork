@@ -51,68 +51,60 @@ class UserProfile(models.Model):
 
 
 class Post(models.Model):
-
-    class ContentType(models.TextChoices):
-        TEXT  = 'text',  'Текст'
-        IMAGE = 'image', 'Зображення'
-        VIDEO = 'video', 'Відео'
-        LINK  = 'link',  'Посилання'
-
     author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='posts',
-        verbose_name='Автор',
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='posts', 
+        verbose_name='Автор'
     )
-   
     group = models.ForeignKey(
-        'Group',
-        on_delete=models.CASCADE,
+        'Group', 
+        on_delete=models.CASCADE, 
         related_name='posts',
-        blank=True,
-        null=True,
+        blank=True, 
+        null=True, 
         verbose_name='Група',
     )
-    text = models.TextField(
-        blank=True,
-        default='',
-        verbose_name='Текст публікації',
-    )
     image = models.ImageField(
-        upload_to='posts/images/',
-        blank=True,
-        null=True,
-        verbose_name='Зображення',
+        upload_to='posts/images/', 
+        blank=True, 
+        null=True, 
+        verbose_name='Зображення'
     )
     video = models.FileField(
-        upload_to='posts/videos/',
-        blank=True,
-        null=True,
-        verbose_name='Відео',
+        upload_to='posts/videos/', 
+        blank=True, 
+        null=True, 
+        verbose_name='Відео'
     )
-    link = models.URLField(
-        blank=True,
-        default='',
-        verbose_name='Посилання',
-    )
-    content_type = models.CharField(
-        max_length=10,
-        choices=ContentType.choices,
-        default=ContentType.TEXT,
-        verbose_name='Тип контенту',
+    text = models.TextField(
+        blank=True, 
+        default='', 
+        verbose_name='Підпис'
     )
     created_at = models.DateTimeField(
-        default=timezone.now,
-        verbose_name='Дата публікації',
+        default=timezone.now, 
+        verbose_name='Дата публікації'
     )
-
+ 
     class Meta:
         verbose_name = 'Публікація'
         verbose_name_plural = 'Публікації'
         ordering = ['-created_at']
-
+ 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if not self.image and not self.video:
+            raise ValidationError('Додайте фото або відео — публікація без медіа неможлива.')
+        if self.image and self.video:
+            raise ValidationError('Оберіть лише один тип медіа: фото або відео.')
+ 
+    @property
+    def media_type(self):
+        return 'video' if self.video else 'image'
+ 
     def __str__(self):
-        return f'Пост #{self.pk} від {self.author.username} ({self.get_content_type_display()})'
+        return f'Пост #{self.pk} від {self.author.username}'
 
 
 

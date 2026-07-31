@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load mention_filters %}
 
 {% block title %}{{ group.name }} — SocialNet{% endblock %}
 
@@ -27,7 +28,7 @@
     </a>
   </div>
 
- 
+
   <div class="d-flex gap-2 flex-shrink-0">
     {% if is_admin %}
       <a href="{% url 'group_edit' group.pk %}" class="btn btn-outline-secondary btn-sm">
@@ -75,7 +76,7 @@
   {% for post in posts %}
     <div class="border rounded p-3 mb-3">
 
-      
+     
       <div class="d-flex align-items-center gap-2 mb-2">
         {% if post.author.profile.avatar %}
           <img src="{{ post.author.profile.avatar.url }}"
@@ -110,10 +111,6 @@
         {% endif %}
       </div>
 
-      {% if post.text %}
-        <p class="mb-2">{{ post.text }}</p>
-      {% endif %}
-
       {% if post.image %}
         <img src="{{ post.image.url }}" class="img-fluid rounded mb-2" alt="">
       {% endif %}
@@ -124,13 +121,17 @@
         </video>
       {% endif %}
 
-      {% if post.link %}
-        <a href="{{ post.link }}" target="_blank" class="d-block small text-truncate mb-2">
-          {{ post.link }}
-        </a>
+      {% if post.text %}
+        <p class="mb-2">
+          <a href="{% url 'profile' post.author.username %}"
+             class="fw-semibold text-decoration-none me-1">
+            {{ post.author.username }}
+          </a>
+          {{ post.text|linkify_mentions }}
+        </p>
       {% endif %}
 
-     
+      
       <div class="d-flex gap-2 pt-2 border-top">
         <form method="post" action="{% url 'post_like' post.pk %}">
           {% csrf_token %}

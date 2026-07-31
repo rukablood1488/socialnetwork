@@ -33,15 +33,18 @@
   </div>
 </div>
 
+
 {% if profile_user.profile.bio %}
   <p class="mb-2">{{ profile_user.profile.bio }}</p>
 {% endif %}
+
 
 {% if profile_user.profile.birth_date %}
   <p class="text-muted small mb-2">
     🎂 {{ profile_user.profile.birth_date|date:"d.m.Y" }}
   </p>
 {% endif %}
+
 
 <div class="d-flex gap-3 mb-3">
   <a href="{% url 'profile_friends' profile_user.username %}" class="text-decoration-none">
@@ -58,6 +61,7 @@
   </a>
 </div>
 
+
 {% if user == profile_user %}
   <a href="{% url 'profile_edit' profile_user.username %}"
      class="btn btn-outline-secondary btn-sm mb-3">
@@ -66,6 +70,7 @@
 {% elif user.is_authenticated %}
   <div class="d-flex align-items-center gap-2 mb-3">
 
+    
     {% if is_following %}
       <form method="post" action="{% url 'unsubscribe' profile_user.pk %}">
         {% csrf_token %}
@@ -78,6 +83,7 @@
       </form>
     {% endif %}
 
+    
     {% if is_friend %}
       <span class="badge bg-success">🤝 Друзі</span>
     {% endif %}
@@ -87,22 +93,34 @@
 
 <hr>
 
+
 <h2 class="h5 mb-3">Публікації</h2>
 
 {% if posts %}
-  {% for post in posts %}
-    <div class="border rounded p-3 mb-3">
-      <p class="mb-1">{{ post.text }}</p>
-      {% if post.image %}
-        <img src="{{ post.image.url }}" class="img-fluid rounded mb-1" alt="">
-      {% endif %}
-      {% if post.link %}
-        <a href="{{ post.link }}" target="_blank" class="d-block small mb-1">{{ post.link }}</a>
-      {% endif %}
-      <small class="text-muted">{{ post.created_at|date:"d.m.Y H:i" }}</small>
-      <a href="{% url 'post_detail' post.pk %}" class="small ms-2">Детальніше</a>
-    </div>
-  {% endfor %}
+  <div class="row row-cols-3 g-1">
+    {% for post in posts %}
+      <div class="col">
+        <a href="{% url 'post_detail' post.pk %}"
+           class="d-block position-relative"
+           style="aspect-ratio: 1 / 1; overflow:hidden; background:#000;">
+
+          {% if post.media_type == 'video' %}
+            <video class="w-100 h-100" style="object-fit:cover;" muted>
+              <source src="{{ post.video.url }}">
+            </video>
+            <span class="position-absolute top-0 end-0 m-1 text-white" style="font-size:1.1rem;">
+              ▶
+            </span>
+          {% else %}
+            <img src="{{ post.image.url }}"
+                 class="w-100 h-100"
+                 style="object-fit:cover;"
+                 alt="">
+          {% endif %}
+        </a>
+      </div>
+    {% endfor %}
+  </div>
 {% else %}
   <p class="text-muted">Публікацій ще немає.</p>
 {% endif %}
