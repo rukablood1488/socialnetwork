@@ -59,7 +59,7 @@
   {# ПРАВА КОЛОНКА #}
   <div class="col-12 col-md-5 post-side-col bg-body">
 
-    <div class="d-flex align-items-center gap-2 p-3 border-bottom">
+    <div class="d-flex align-items-start gap-2 p-3 border-bottom">
       {% if post.author.profile.avatar %}
         <img src="{{ post.author.profile.avatar.url }}"
              width="36" height="36"
@@ -73,13 +73,21 @@
         </div>
       {% endif %}
 
-      <a href="{% url 'profile' post.author.username %}"
-         class="fw-semibold text-decoration-none">
-        {{ post.author.username }}
-      </a>
+      <div class="small flex-grow-1 min-width-0">
+        <a href="{% url 'profile' post.author.username %}"
+           class="fw-semibold text-decoration-none me-1">
+          {{ post.author.username }}
+        </a>
+        {% if post.text %}
+          {{ post.text|linkify_mentions|linebreaksbr }}
+        {% endif %}
+        <div class="text-muted" style="font-size:0.75rem;">
+          {{ post.created_at|date:"d.m.Y H:i" }}
+        </div>
+      </div>
 
       {% if post.author == user or user.is_staff %}
-        <div class="ms-auto d-flex gap-1">
+        <div class="d-flex gap-1 flex-shrink-0">
           <a href="{% url 'post_edit' post.pk %}" class="btn btn-outline-secondary btn-sm">✏️</a>
           <form method="post" action="{% url 'post_delete' post.pk %}">
             {% csrf_token %}
@@ -92,33 +100,6 @@
 
     <div class="post-comments-scroll p-3">
 
-      {% if post.text %}
-        <div class="d-flex align-items-start gap-2 mb-3">
-          {% if post.author.profile.avatar %}
-            <img src="{{ post.author.profile.avatar.url }}"
-                 width="32" height="32"
-                 class="rounded-circle flex-shrink-0"
-                 style="object-fit:cover;" alt="">
-          {% else %}
-            <div class="rounded-circle bg-secondary d-flex align-items-center
-                        justify-content-center text-white flex-shrink-0"
-                 style="width:32px;height:32px;font-size:0.8rem;">
-              {{ post.author.username|first|upper }}
-            </div>
-          {% endif %}
-          <div class="small">
-            <a href="{% url 'profile' post.author.username %}"
-               class="fw-semibold text-decoration-none me-1">
-              {{ post.author.username }}
-            </a>
-            {{ post.text|linkify_mentions|linebreaksbr }}
-            <div class="text-muted" style="font-size:0.75rem;">
-              {{ post.created_at|date:"d.m.Y H:i" }}
-            </div>
-          </div>
-        </div>
-        <hr>
-      {% endif %}
 
       {% if comments %}
         {% for comment in comments %}

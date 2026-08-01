@@ -73,15 +73,8 @@
 
 
           {% if post.text %}
-            <p class="mb-2">
-              <a href="{% url 'profile' post.author.username %}"
-                 class="fw-semibold text-decoration-none me-1">
-                {{ post.author.username }}
-              </a>
-              {{ post.text|linkify_mentions }}
-            </p>
+            <p class="mb-2">{{ post.text|linkify_mentions }}</p>
           {% endif %}
-
 
           <div class="d-flex gap-2 pt-2 border-top">
 
@@ -129,7 +122,6 @@
     {% endif %}
 
   </div>
-
 
 
   <div class="col-md-4 d-none d-md-block">

@@ -297,17 +297,21 @@ class PostLikeView(LoginRequiredMixin, View):
         like, created = Like.objects.get_or_create(user=request.user, post=post)
         if not created:
             like.delete()
-        return redirect('post_detail', pk=pk)
+        referer = request.META.get('HTTP_REFERER')
+        return redirect(referer or reverse('post_detail', kwargs={'pk': pk}))
  
  
 class PostRepostView(LoginRequiredMixin, View):
     def post(self, request, pk):
         post = get_object_or_404(Post, pk=pk)
         if post.author != request.user:
-            Repost.objects.get_or_create(user=request.user, post=post)
-        return redirect('post_detail', pk=pk)
- 
- 
+            repost, created = Repost.objects.get_or_create(user=request.user, post=post)
+            if not created:
+                repost.delete()
+        referer = request.META.get('HTTP_REFERER')
+        return redirect(referer or reverse('post_detail', kwargs={'pk': pk}))
+    
+    
 class CommentCreateView(LoginRequiredMixin, View):
     def post(self, request, pk):
         post = get_object_or_404(Post, pk=pk)
