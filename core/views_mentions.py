@@ -21,6 +21,7 @@ class MentionSuggestView(LoginRequiredMixin, View):
                     avatar_url = profile.avatar.url
 
                 results.append({
+                    'id': u.pk,
                     'username': u.username,
                     'avatar_url': avatar_url,
                     'full_name': u.get_full_name(),

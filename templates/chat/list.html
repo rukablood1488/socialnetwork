@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Повідомлення — SocialNet{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h4 mb-0">Повідомлення</h1>
+  <div class="d-flex gap-2">
+    <a href="{% url 'chat_new' %}" class="btn btn-primary btn-sm">
+      ✉️ Нове повідомлення
+    </a>
+    <a href="{% url 'chat_create_group' %}" class="btn btn-outline-primary btn-sm">
+      👥 Груповий чат
+    </a>
+  </div>
+</div>
+
+{% if chat_data %}
+  <div class="d-flex flex-column gap-2">
+    {% for item in chat_data %}
+      <a href="{% url 'chat_detail' item.chat.pk %}"
+         class="border rounded p-3 d-flex align-items-center gap-3 text-decoration-none text-body
+                {% if item.unread_count %}bg-body-tertiary{% endif %}">
+
+
+        {% if item.chat.is_group %}
+          <div class="rounded-circle bg-primary d-flex align-items-center
+                      justify-content-center text-white flex-shrink-0"
+               style="width:48px;height:48px;font-size:1.2rem;">
+            👥
+          </div>
+        {% elif item.other_user.profile.avatar %}
+          <img src="{{ item.other_user.profile.avatar.url }}"
+               width="48" height="48"
+               class="rounded-circle flex-shrink-0"
+               style="object-fit:cover;" alt="">
+        {% else %}
+          <div class="rounded-circle bg-secondary d-flex align-items-center
+                      justify-content-center text-white flex-shrink-0"
+               style="width:48px;height:48px;">
+            {{ item.other_user.username|first|upper|default:"?" }}
+          </div>
+        {% endif %}
+
+
+        <div class="flex-grow-1 min-width-0">
+          <div class="{% if item.unread_count %}fw-semibold{% endif %} text-truncate">
+            {% if item.chat.is_group %}
+              {{ item.chat.name|default:"Груповий чат" }}
+            {% else %}
+              {{ item.other_user.get_full_name|default:item.other_user.username }}
+            {% endif %}
+          </div>
+          <div class="text-muted small text-truncate">
+            {% if item.last_message %}
+              {% if item.last_message.sender == user %}Ви: {% endif %}
+              {% if item.last_message.text %}
+                {{ item.last_message.text }}
+              {% elif item.last_message.image %}📷 Фото
+              {% elif item.last_message.video %}🎥 Відео
+              {% elif item.last_message.file %}📎 Файл
+              {% endif %}
+            {% else %}
+              Повідомлень ще немає
+            {% endif %}
+          </div>
+        </div>
+
+
+        <div class="text-end flex-shrink-0">
+          {% if item.last_message %}
+            <div class="text-muted small">{{ item.last_message.created_at|date:"d.m H:i" }}</div>
+          {% endif %}
+          {% if item.unread_count %}
+            <span class="badge bg-primary rounded-pill">{{ item.unread_count }}</span>
+          {% endif %}
+        </div>
+
+      </a>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="text-center text-muted py-5">
+    <p class="mb-2">У вас ще немає повідомлень.</p>
+    <a href="{% url 'chat_new' %}" class="btn btn-primary btn-sm">Написати перше повідомлення</a>
+  </div>
+{% endif %}
+
+{% endblock %}
