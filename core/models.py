@@ -8,40 +8,43 @@ from django.utils import timezone
 
 
 class UserProfile(models.Model):
-    
     user = models.OneToOneField(
-        User,
-        on_delete=models.CASCADE,
+        User, 
+        on_delete=models.CASCADE, 
         related_name='profile',
         verbose_name='Користувач',
     )
     avatar = models.ImageField(
-        upload_to='avatars/',
-        blank=True,
-        null=True,
-        verbose_name='Аватар',
+        upload_to='avatars/', 
+        blank=True, null=True, 
+        verbose_name='Аватар'
     )
     cover = models.ImageField(
         upload_to='covers/',
-        blank=True,
-        null=True,
-        verbose_name='Обкладинка',
+        blank=True, 
+        null=True, 
+        verbose_name='Обкладинка'
     )
     bio = models.TextField(
-        blank=True,
-        default='',
-        verbose_name='Біографія',
+        blank=True, 
+        default='', 
+        verbose_name='Біографія'
     )
     birth_date = models.DateField(
-        blank=True,
-        null=True,
-        verbose_name='Дата народження',
+        blank=True, 
+        null=True, 
+        verbose_name='Дата народження'
     )
-
+    is_private = models.BooleanField(
+        default=False,
+        verbose_name='Приватний акаунт',
+        help_text='Дописи, друзі та підписки видно лише підписникам',
+    )
+ 
     class Meta:
         verbose_name = 'Профіль користувача'
         verbose_name_plural = 'Профілі користувачів'
-
+ 
     def __str__(self):
         return f'Профіль: {self.user.username}'
 
@@ -218,7 +221,10 @@ class Repost(models.Model):
 
 
 class Subscription(models.Model):
-
+    class Status(models.TextChoices):
+        PENDING  = 'pending',  'Очікує підтвердження'
+        ACCEPTED = 'accepted', 'Підтверджено'
+ 
     follower = models.ForeignKey(
         User, 
         on_delete=models.CASCADE, 
@@ -230,6 +236,12 @@ class Subscription(models.Model):
         on_delete=models.CASCADE, 
         related_name='subscribers', 
         verbose_name='На кого підписаний',
+    )
+    status = models.CharField(
+        max_length=10, 
+        choices=Status.choices, 
+        default=Status.ACCEPTED, 
+        verbose_name='Статус',
     )
     created_at = models.DateTimeField(
         auto_now_add=True, 
@@ -243,7 +255,7 @@ class Subscription(models.Model):
         ordering = ['-created_at']
  
     def __str__(self):
-        return f'{self.follower.username} стежить за {self.following.username}'
+        return f'{self.follower.username} стежить за {self.following.username} [{self.get_status_display()}]'
 
 
 # ГРУПИ ТА СПІЛЬНОТИ

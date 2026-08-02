@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Запити на стеження — SocialNet{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h4 mb-0">Запити на стеження</h1>
+  <a href="{% url 'friends' %}" class="btn btn-outline-secondary btn-sm">
+    ← До списку друзів
+  </a>
+</div>
+
+{% if pending %}
+  <div class="d-flex flex-column gap-3">
+    {% for sub in pending %}
+      <div class="border rounded p-3 d-flex align-items-center gap-3">
+
+        {% if sub.follower.profile.avatar %}
+          <img src="{{ sub.follower.profile.avatar.url }}"
+               width="48" height="48"
+               class="rounded-circle flex-shrink-0"
+               style="object-fit:cover;" alt="">
+        {% else %}
+          <div class="rounded-circle bg-secondary d-flex align-items-center
+                      justify-content-center text-white flex-shrink-0"
+               style="width:48px;height:48px;">
+            {{ sub.follower.username|first|upper }}
+          </div>
+        {% endif %}
+
+        <div class="flex-grow-1">
+          <a href="{% url 'profile' sub.follower.username %}"
+             class="fw-semibold text-decoration-none">
+            {{ sub.follower.get_full_name|default:sub.follower.username }}
+          </a>
+          <div class="text-muted small">@{{ sub.follower.username }}</div>
+          <div class="text-muted small">{{ sub.created_at|date:"d.m.Y H:i" }}</div>
+        </div>
+
+        <div class="d-flex gap-2 flex-shrink-0">
+          <form method="post" action="{% url 'subscription_accept' sub.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary btn-sm">
+              ✓ Підтвердити
+            </button>
+          </form>
+
+          <form method="post" action="{% url 'subscription_decline' sub.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger btn-sm">
+              ✕ Відхилити
+            </button>
+          </form>
+        </div>
+
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="text-muted">Нових запитів немає.</p>
+{% endif %}
+
+{% endblock %}

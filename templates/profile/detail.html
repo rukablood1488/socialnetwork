@@ -4,12 +4,14 @@
 
 {% block content %}
 
+
 {% if profile_user.profile.cover %}
   <img src="{{ profile_user.profile.cover.url }}"
        alt="Обкладинка"
        class="w-100 mb-3"
        style="max-height:200px; object-fit:cover; border-radius:8px;">
 {% endif %}
+
 
 <div class="d-flex align-items-center gap-3 mb-3">
   {% if profile_user.profile.avatar %}
@@ -26,9 +28,14 @@
   {% endif %}
 
   <div>
-    <h1 class="h4 mb-0">
-      {{ profile_user.get_full_name|default:profile_user.username }}
-    </h1>
+    <div class="d-flex align-items-center gap-2">
+      <h1 class="h4 mb-0">
+        {{ profile_user.get_full_name|default:profile_user.username }}
+      </h1>
+      {% if profile_user.profile.is_private %}
+        <span class="badge bg-secondary">🔒 Приватний</span>
+      {% endif %}
+    </div>
     <p class="text-muted mb-0">@{{ profile_user.username }}</p>
   </div>
 </div>
@@ -70,11 +77,20 @@
 {% elif user.is_authenticated %}
   <div class="d-flex align-items-center gap-2 mb-3">
 
-    
     {% if is_following %}
       <form method="post" action="{% url 'unsubscribe' profile_user.pk %}">
         {% csrf_token %}
         <button class="btn btn-outline-secondary btn-sm">Відписатись</button>
+      </form>
+    {% elif is_pending %}
+      <form method="post" action="{% url 'unsubscribe' profile_user.pk %}">
+        {% csrf_token %}
+        <button class="btn btn-outline-secondary btn-sm">Скасувати запит</button>
+      </form>
+    {% elif profile_user.profile.is_private %}
+      <form method="post" action="{% url 'subscribe' profile_user.pk %}">
+        {% csrf_token %}
+        <button class="btn btn-primary btn-sm">Запросити стеження</button>
       </form>
     {% else %}
       <form method="post" action="{% url 'subscribe' profile_user.pk %}">
@@ -83,7 +99,7 @@
       </form>
     {% endif %}
 
-    
+
     {% if is_friend %}
       <span class="badge bg-success">🤝 Друзі</span>
     {% endif %}
@@ -96,7 +112,19 @@
 
 <h2 class="h5 mb-3">Публікації</h2>
 
-{% if posts %}
+{% if is_locked %}
+  <div class="text-center text-muted py-5">
+    <p style="font-size:2rem;" class="mb-2">🔒</p>
+    <p class="mb-1">Цей акаунт приватний.</p>
+    <p class="small">
+      {% if is_pending %}
+        Запит на стеження очікує підтвердження.
+      {% else %}
+        Підпишіться, щоб побачити публікації.
+      {% endif %}
+    </p>
+  </div>
+{% elif posts %}
   <div class="row row-cols-3 g-1">
     {% for post in posts %}
       <div class="col">
