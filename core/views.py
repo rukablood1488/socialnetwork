@@ -742,8 +742,3 @@ class GroupPromoteView(LoginRequiredMixin, View):
         return redirect('group_members', pk=pk)
 
 
-# ЗАГЛУШКИ
-
-class ChatListView(LoginRequiredMixin, View):
-    def get(self, request):
-        return HttpResponse('TODO: чат')

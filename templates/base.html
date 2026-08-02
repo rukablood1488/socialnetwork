@@ -38,7 +38,7 @@
               <a class="nav-link" href="{% url 'group_list' %}">Групи</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'chat_list' %}">Чат</a>
+              <a class="nav-link" href="{% url 'chat_list' %}">Повідомлення</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'notifications' %}">
@@ -77,7 +77,7 @@
     </div>
   </nav>
 
-  
+
   {% if messages %}
     <div class="container mb-3">
       {% for message in messages %}
@@ -89,7 +89,6 @@
     </div>
   {% endif %}
 
-  
   <main class="container">
     {% block content %}{% endblock %}
   </main>

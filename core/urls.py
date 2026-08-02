@@ -3,6 +3,7 @@ from . import views
 from .urls_search import search_urls
 from .urls_mentions import mention_urls
 from .urls_notificatioins import notification_urls
+from .urls_chat import chat_urls
 
 
 feed_urls = [
@@ -87,24 +88,6 @@ group_urls = [
     path('groups/<int:pk>/members/<int:user_id>/kick/', views.GroupKickView.as_view(), name='group_kick'),
 
     path('groups/<int:pk>/members/<int:user_id>/promote/', views.GroupPromoteView.as_view(), name='group_promote'),
-]
-
-
-chat_urls = [
-
-    path('chat/', views.ChatListView.as_view(), name='chat_list'),
-
-    #path('chat/create/<int:user_id>/', views.chat_create_private, name='chat_create_private'),
-
-    #path('chat/create-group/', views.chat_create_group, name='chat_create_group'),
-
-    #path('chat/<int:pk>/', views.chat_detail, name='chat_detail'),
-
-    #path('chat/<int:pk>/send/', views.message_send, name='message_send'),
-
-    #path('chat/<int:pk>/message/<int:msg_id>/delete/', views.message_delete, name='message_delete'),
-
-    #path('chat/<int:pk>/read/', views.chat_mark_read, name='chat_mark_read'),
 ]
 
 
