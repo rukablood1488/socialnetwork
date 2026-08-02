@@ -12,7 +12,7 @@
 </head>
 <body>
 
-  
+
   <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
     <div class="container">
       <a class="navbar-brand" href="{% url 'feed' %}">SocialNet</a>
@@ -43,6 +43,9 @@
             <li class="nav-item">
               <a class="nav-link" href="{% url 'notifications' %}">
                 Сповіщення
+                {% if unread_notifications_count %}
+                  <span class="badge bg-danger rounded-pill">{{ unread_notifications_count }}</span>
+                {% endif %}
               </a>
             </li>
           </ul>

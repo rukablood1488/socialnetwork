@@ -747,8 +747,3 @@ class GroupPromoteView(LoginRequiredMixin, View):
 class ChatListView(LoginRequiredMixin, View):
     def get(self, request):
         return HttpResponse('TODO: чат')
-
-
-class NotificationsView(LoginRequiredMixin, View):
-    def get(self, request):
-        return HttpResponse('TODO: сповіщення')

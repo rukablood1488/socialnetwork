@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Сповіщення — SocialNet{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h4 mb-0">Сповіщення</h1>
+
+  {% if notifications %}
+    <form method="post" action="{% url 'notifications_read_all' %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline-secondary btn-sm">
+        Позначити всі як прочитані
+      </button>
+    </form>
+  {% endif %}
+</div>
+
+{% if notifications %}
+  <div class="d-flex flex-column gap-2">
+    {% for notif in notifications %}
+      <form method="post" action="{% url 'notification_read' notif.pk %}">
+        {% csrf_token %}
+        <button
+          type="submit"
+          class="btn w-100 text-start border rounded p-3 d-flex align-items-center gap-3
+                 {% if not notif.is_read %}bg-body-tertiary{% endif %}"
+        >
+
+          <span style="font-size:1.4rem;" class="flex-shrink-0">
+            {% if notif.notification_type == 'like' %}❤️
+            {% elif notif.notification_type == 'comment' %}💬
+            {% elif notif.notification_type == 'repost' %}🔁
+            {% elif notif.notification_type == 'subscribe' %}👤
+            {% elif notif.notification_type == 'message' %}✉️
+            {% elif notif.notification_type == 'group_invite' %}🏘
+            {% else %}🔔
+            {% endif %}
+          </span>
+
+          
+          {% if notif.sender %}
+            {% if notif.sender.profile.avatar %}
+              <img src="{{ notif.sender.profile.avatar.url }}"
+                   width="40" height="40"
+                   class="rounded-circle flex-shrink-0"
+                   style="object-fit:cover;" alt="">
+            {% else %}
+              <div class="rounded-circle bg-secondary d-flex align-items-center
+                          justify-content-center text-white flex-shrink-0"
+                   style="width:40px;height:40px;">
+                {{ notif.sender.username|first|upper }}
+              </div>
+            {% endif %}
+          {% endif %}
+
+          
+          <div class="flex-grow-1 min-width-0 text-body">
+            <div class="{% if not notif.is_read %}fw-semibold{% endif %}">
+              {{ notif.text }}
+            </div>
+            <div class="text-muted small">
+              {{ notif.created_at|date:"d.m.Y H:i" }}
+            </div>
+          </div>
+
+          
+          {% if not notif.is_read %}
+            <span class="badge bg-primary rounded-circle flex-shrink-0" style="width:10px;height:10px;"></span>
+          {% endif %}
+
+        </button>
+      </form>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="text-muted text-center py-5">Сповіщень поки немає.</p>
+{% endif %}
+
+{% endblock %}

@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 from .urls_search import search_urls
 from .urls_mentions import mention_urls
+from .urls_notificatioins import notification_urls
 
 
 feed_urls = [
@@ -107,14 +108,6 @@ chat_urls = [
 ]
 
 
-notification_urls = [
-    path('notifications/', views.NotificationsView.as_view(), name='notifications'),
-
-    #path('notifications/<int:pk>/read/', views.notification_read, name='notification_read'),
-
-    #path('notifications/read-all/', views.notifications_read_all, name='notifications_read_all'),
-]
-
 
 urlpatterns = (
     feed_urls
@@ -124,7 +117,7 @@ urlpatterns = (
     + friend_urls
     + group_urls
     + chat_urls
-    + notification_urls
     + search_urls
     + mention_urls
+    + notification_urls
 )
