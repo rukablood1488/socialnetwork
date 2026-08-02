@@ -96,7 +96,13 @@ class ProfileEditForm(forms.Form):
         widget=forms.DateInput(attrs={'type': 'date'}),
     )
     avatar = forms.ImageField(label='Аватар', required=False)
-    cover  = forms.ImageField(label='Обкладинка', required=False)
+    cover = forms.ImageField(label='Обкладинка', required=False)
+    is_private = forms.BooleanField(
+        label='Приватний акаунт',
+        required=False,
+        help_text='Дописи, друзі та підписки видно лише підписникам',
+        widget=forms.CheckboxInput(),
+    )
  
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -108,6 +114,7 @@ class ProfileEditForm(forms.Form):
             if profile:
                 self.fields['bio'].initial = profile.bio
                 self.fields['birth_date'].initial = profile.birth_date
+                self.fields['is_private'].initial = profile.is_private
  
     def save(self, user):
         data = self.cleaned_data
@@ -117,8 +124,9 @@ class ProfileEditForm(forms.Form):
         user.save()
  
         profile, _created = UserProfile.objects.get_or_create(user=user)
-        profile.bio        = data.get('bio', '')
+        profile.bio = data.get('bio', '')
         profile.birth_date = data.get('birth_date') or None
+        profile.is_private = data.get('is_private', False)
         if data.get('avatar'):
             profile.avatar = data['avatar']
         if data.get('cover'):

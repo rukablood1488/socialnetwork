@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
@@ -21,6 +22,24 @@ def get_friend_ids(user):
         Subscription.objects.filter(following=user).values_list('follower_id', flat=True)
     )
     return following_ids & follower_ids
+
+
+def can_view_user_content(viewer, target_user):
+    profile = getattr(target_user, 'profile', None)
+    if not profile or not profile.is_private:
+        return True
+ 
+    if not viewer.is_authenticated:
+        return False
+ 
+    if viewer == target_user or viewer.is_staff:
+        return True
+ 
+    return Subscription.objects.filter(
+        follower=viewer,
+        following=target_user,
+        status=Subscription.Status.ACCEPTED,
+    ).exists()
 
 
 # АВТЕНТИФІКАЦІЯ
@@ -93,27 +112,41 @@ class LogoutView(LoginRequiredMixin, View):
 class ProfileView(View):
     def get(self, request, username):
         profile_user = get_object_or_404(User, username=username)
-
-        posts = profile_user.posts.filter(
-            group__isnull=True,
-        ).order_by('-created_at')
-
+ 
+        can_view = can_view_user_content(request.user, profile_user)
+ 
         friends_count = len(get_friend_ids(profile_user))
-        followers_count = Subscription.objects.filter(following=profile_user).count()
-        following_count = Subscription.objects.filter(follower=profile_user).count()
-
-        is_friend = is_following = False
+        followers_count = Subscription.objects.filter(
+            following=profile_user, status=Subscription.Status.ACCEPTED,
+        ).count()
+        following_count = Subscription.objects.filter(
+            follower=profile_user, status=Subscription.Status.ACCEPTED,
+        ).count()
+ 
+        if can_view:
+            posts = profile_user.posts.filter(group__isnull=True).order_by('-created_at')
+        else:
+            posts = Post.objects.none()
+ 
+        is_friend = is_following = is_pending = False
         if request.user.is_authenticated and request.user != profile_user:
             is_following = Subscription.objects.filter(
                 follower=request.user,
                 following=profile_user,
+                status=Subscription.Status.ACCEPTED,
+            ).exists()
+            is_pending = Subscription.objects.filter(
+                follower=request.user,
+                following=profile_user,
+                status=Subscription.Status.PENDING,
             ).exists()
             is_followed_back = Subscription.objects.filter(
                 follower=profile_user,
                 following=request.user,
+                status=Subscription.Status.ACCEPTED,
             ).exists()
             is_friend = is_following and is_followed_back
-
+ 
         return render(request, 'profile/detail.html', {
             'profile_user': profile_user,
             'posts': posts,
@@ -122,6 +155,8 @@ class ProfileView(View):
             'following_count': following_count,
             'is_friend': is_friend,
             'is_following': is_following,
+            'is_pending': is_pending,
+            'is_locked': not can_view,
         })
 
 
@@ -151,37 +186,52 @@ class ProfileEditView(LoginRequiredMixin, View):
 class ProfileFriendsView(View):
     def get(self, request, username):
         profile_user = get_object_or_404(User, username=username)
+ 
+        if not can_view_user_content(request.user, profile_user):
+            messages.info(request, 'Цей акаунт приватний. Підпишіться, щоб побачити цю інформацію.')
+            return redirect('profile', username=username)
+ 
         friend_ids = get_friend_ids(profile_user)
         friends = User.objects.filter(pk__in=friend_ids).select_related('profile')
-
+ 
         return render(request, 'profile/friends.html', {
             'profile_user': profile_user,
             'friends': friends,
         })
-
-
+ 
+ 
 class ProfileFollowersView(View):
     def get(self, request, username):
         profile_user = get_object_or_404(User, username=username)
+ 
+        if not can_view_user_content(request.user, profile_user):
+            messages.info(request, 'Цей акаунт приватний. Підпишіться, щоб побачити цю інформацію.')
+            return redirect('profile', username=username)
+ 
         followers = [
             s.follower for s in
             Subscription.objects.filter(
-                following=profile_user,
+                following=profile_user, status=Subscription.Status.ACCEPTED,
             ).select_related('follower')
         ]
         return render(request, 'profile/followers.html', {
             'profile_user': profile_user,
             'followers': followers,
         })
-
-
+ 
+ 
 class ProfileFollowingView(View):
     def get(self, request, username):
         profile_user = get_object_or_404(User, username=username)
+ 
+        if not can_view_user_content(request.user, profile_user):
+            messages.info(request, 'Цей акаунт приватний. Підпишіться, щоб побачити цю інформацію.')
+            return redirect('profile', username=username)
+ 
         following = [
             s.following for s in
             Subscription.objects.filter(
-                follower=profile_user,
+                follower=profile_user, status=Subscription.Status.ACCEPTED,
             ).select_related('following')
         ]
         return render(request, 'profile/following.html', {
@@ -369,13 +419,13 @@ class FeedView(LoginRequiredMixin, View):
 
 class FriendsView(LoginRequiredMixin, View):
     template_name = 'friends/list.html'
-
+ 
     def get(self, request):
         friend_ids = get_friend_ids(request.user)
         friends = User.objects.filter(pk__in=friend_ids).select_related('profile')
         return render(request, self.template_name, {'friends': friends})
-
-
+ 
+ 
 class FriendRemoveView(LoginRequiredMixin, View):
     def post(self, request, user_id):
         target = get_object_or_404(User, pk=user_id)
@@ -384,27 +434,32 @@ class FriendRemoveView(LoginRequiredMixin, View):
             following=target,
         ).delete()
         return redirect('profile', username=target.username)
-
+ 
     def get(self, request, user_id):
         target = get_object_or_404(User, pk=user_id)
         return redirect('profile', username=target.username)
-
-
+ 
+ 
 class SubscribeView(LoginRequiredMixin, View):
     def post(self, request, user_id):
         target = get_object_or_404(User, pk=user_id)
         if target != request.user:
+            target_profile = getattr(target, 'profile', None)
+            is_private = target_profile.is_private if target_profile else False
+            status = Subscription.Status.PENDING if is_private else Subscription.Status.ACCEPTED
+ 
             Subscription.objects.get_or_create(
                 follower=request.user,
                 following=target,
+                defaults={'status': status},
             )
         return redirect('profile', username=target.username)
-
+ 
     def get(self, request, user_id):
         target = get_object_or_404(User, pk=user_id)
         return redirect('profile', username=target.username)
-
-
+ 
+ 
 class UnsubscribeView(LoginRequiredMixin, View):
     def post(self, request, user_id):
         target = get_object_or_404(User, pk=user_id)
@@ -413,10 +468,52 @@ class UnsubscribeView(LoginRequiredMixin, View):
             following=target,
         ).delete()
         return redirect('profile', username=target.username)
-
+ 
     def get(self, request, user_id):
         target = get_object_or_404(User, pk=user_id)
         return redirect('profile', username=target.username)
+ 
+ 
+class SubscriptionRequestsView(LoginRequiredMixin, View):
+    template_name = 'friends/subscription_requests.html'
+ 
+    def get(self, request):
+        pending = Subscription.objects.filter(
+            following=request.user,
+            status=Subscription.Status.PENDING,
+        ).select_related('follower', 'follower__profile')
+        return render(request, self.template_name, {'pending': pending})
+ 
+ 
+class SubscriptionAcceptView(LoginRequiredMixin, View):
+    def post(self, request, sub_id):
+        sub = get_object_or_404(
+            Subscription,
+            pk=sub_id,
+            following=request.user,
+            status=Subscription.Status.PENDING,
+        )
+        sub.status = Subscription.Status.ACCEPTED
+        sub.save()
+        return redirect('subscription_requests')
+ 
+    def get(self, request, sub_id):
+        return redirect('subscription_requests')
+ 
+ 
+class SubscriptionDeclineView(LoginRequiredMixin, View):
+    def post(self, request, sub_id):
+        sub = get_object_or_404(
+            Subscription,
+            pk=sub_id,
+            following=request.user,
+            status=Subscription.Status.PENDING,
+        )
+        sub.delete()
+        return redirect('subscription_requests')
+ 
+    def get(self, request, sub_id):
+        return redirect('subscription_requests')
 
 
 # ГРУПИ

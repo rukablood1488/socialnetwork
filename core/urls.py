@@ -57,6 +57,12 @@ friend_urls = [
     path('friends/subscribe/<int:user_id>/', views.SubscribeView.as_view(), name='subscribe'),
 
     path('friends/unsubscribe/<int:user_id>/', views.UnsubscribeView.as_view(), name='unsubscribe'),
+
+    path('friends/requests/', views.SubscriptionRequestsView.as_view(), name='subscription_requests'),
+
+    path('friends/requests/<int:sub_id>/accept/', views.SubscriptionAcceptView.as_view(), name='subscription_accept'),
+
+    path('friends/requests/<int:sub_id>/decline/', views.SubscriptionDeclineView.as_view(), name='subscription_decline'),
 ]
 
 
