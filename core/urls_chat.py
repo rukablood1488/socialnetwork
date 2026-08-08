@@ -5,8 +5,6 @@ from . import views_chat
 chat_urls = [
     path('chat/', views_chat.ChatListView.as_view(), name='chat_list'),
 
-    path('chat/new/', views_chat.ChatNewView.as_view(), name='chat_new'),
-
     path('chat/create/<int:user_id>/', views_chat.ChatCreatePrivateView.as_view(), name='chat_create_private'),
 
     path('chat/create-group/', views_chat.ChatCreateGroupView.as_view(), name='chat_create_group'),
