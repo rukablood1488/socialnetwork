@@ -1,52 +1,53 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
-from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
 from .models import Chat, Message
+from .views import get_friend_ids
+
+
+def _build_chat_sidebar_data(user):
+    chats = Chat.objects.filter(
+        participants=user,
+    ).prefetch_related(
+        'participants', 'participants__profile', 'messages',
+    ).distinct()
+
+    chats = sorted(
+        chats,
+        key=lambda c: c.messages.last().created_at if c.messages.exists() else c.created_at,
+        reverse=True,
+    )
+
+    chat_data = []
+    for chat in chats:
+        other_user = None
+        if not chat.is_group:
+            other_user = chat.participants.exclude(pk=user.pk).first()
+
+        last_message = chat.messages.last()
+        unread_count = chat.messages.exclude(sender=user).filter(is_read=False).count()
+
+        chat_data.append({
+            'chat': chat,
+            'other_user': other_user,
+            'last_message': last_message,
+            'unread_count': unread_count,
+        })
+
+    return chat_data
 
 
 class ChatListView(LoginRequiredMixin, View):
     template_name = 'chat/list.html'
 
     def get(self, request):
-        chats = Chat.objects.filter(
-            participants=request.user,
-        ).prefetch_related(
-            'participants', 'participants__profile', 'messages',
-        ).distinct()
-
-        chats = sorted(
-            chats,
-            key=lambda c: c.messages.last().created_at if c.messages.exists() else c.created_at,
-            reverse=True,
-        )
-
-        chat_data = []
-        for chat in chats:
-            other_user = None
-            if not chat.is_group:
-                other_user = chat.participants.exclude(pk=request.user.pk).first()
-
-            last_message = chat.messages.last()
-            unread_count = chat.messages.exclude(sender=request.user).filter(is_read=False).count()
-
-            chat_data.append({
-                'chat': chat,
-                'other_user': other_user,
-                'last_message': last_message,
-                'unread_count': unread_count,
-            })
-
-        return render(request, self.template_name, {'chat_data': chat_data})
-
-
-class ChatNewView(LoginRequiredMixin, View):
-    template_name = 'chat/new.html'
-
-    def get(self, request):
-        return render(request, self.template_name, {})
+        chat_data = _build_chat_sidebar_data(request.user)
+        return render(request, self.template_name, {
+            'chat_data': chat_data,
+            'active_chat': None,
+        })
 
 
 class ChatCreatePrivateView(LoginRequiredMixin, View):
@@ -75,16 +76,24 @@ class ChatCreateGroupView(LoginRequiredMixin, View):
     template_name = 'chat/create_group.html'
 
     def get(self, request):
-        return render(request, self.template_name, {})
+        friend_ids = get_friend_ids(request.user)
+        friends = User.objects.filter(pk__in=friend_ids).select_related('profile')
+        return render(request, self.template_name, {'friends': friends})
 
     def post(self, request):
         name = request.POST.get('name', '').strip()
-        user_ids = [uid for uid in request.POST.getlist('participants') if uid.isdigit()]
-        participants = User.objects.filter(pk__in=user_ids).exclude(pk=request.user.pk)
+
+        friend_ids = get_friend_ids(request.user)
+        selected_ids = {uid for uid in request.POST.getlist('participants') if uid.isdigit()}
+        selected_ids = {int(uid) for uid in selected_ids} & friend_ids
+
+        participants = User.objects.filter(pk__in=selected_ids)
 
         if not participants.exists():
+            friends = User.objects.filter(pk__in=friend_ids).select_related('profile')
             return render(request, self.template_name, {
-                'error': 'Оберіть хоча б одного учасника.',
+                'friends': friends,
+                'error': 'Оберіть хоча б одного друга.',
             })
 
         chat = Chat.objects.create(name=name, is_group=True)
@@ -93,7 +102,7 @@ class ChatCreateGroupView(LoginRequiredMixin, View):
 
 
 class ChatDetailView(LoginRequiredMixin, View):
-    template_name = 'chat/detail.html'
+    template_name = 'chat/list.html'
 
     def get(self, request, pk):
         chat = get_object_or_404(Chat, pk=pk, participants=request.user)
@@ -106,8 +115,11 @@ class ChatDetailView(LoginRequiredMixin, View):
         if not chat.is_group:
             other_user = chat.participants.exclude(pk=request.user.pk).first()
 
+        chat_data = _build_chat_sidebar_data(request.user)
+
         return render(request, self.template_name, {
-            'chat': chat,
+            'chat_data': chat_data,
+            'active_chat': chat,
             'messages_list': messages_qs,
             'other_user': other_user,
         })

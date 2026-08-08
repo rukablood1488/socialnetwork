@@ -1,90 +1,157 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Повідомлення — SocialNet{% endblock %}
 
+{% block extra_css %}
+<style>
+  .chat-shell {
+    display: flex;
+    height: 75vh;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .chat-sidebar {
+    width: 320px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--bs-border-color);
+  }
+  .chat-sidebar-list {
+    flex: 1 1 auto;
+    overflow-y: auto;
+  }
+  .chat-main {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .chat-item.active {
+    background: var(--bs-tertiary-bg, #f1f1f1);
+  }
+  @media (max-width: 767px) {
+    .chat-shell { flex-direction: column; height: auto; }
+    .chat-sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--bs-border-color); }
+    .chat-main { min-height: 60vh; }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <h1 class="h4 mb-0">Повідомлення</h1>
-  <div class="d-flex gap-2">
-    <a href="{% url 'chat_new' %}" class="btn btn-primary btn-sm">
-      ✉️ Нове повідомлення
-    </a>
-    <a href="{% url 'chat_create_group' %}" class="btn btn-outline-primary btn-sm">
-      👥 Груповий чат
-    </a>
-  </div>
-</div>
 
-{% if chat_data %}
-  <div class="d-flex flex-column gap-2">
-    {% for item in chat_data %}
-      <a href="{% url 'chat_detail' item.chat.pk %}"
-         class="border rounded p-3 d-flex align-items-center gap-3 text-decoration-none text-body
-                {% if item.unread_count %}bg-body-tertiary{% endif %}">
+<form id="csrf-form" class="d-none">{% csrf_token %}</form>
+
+<div class="chat-shell">
 
 
-        {% if item.chat.is_group %}
-          <div class="rounded-circle bg-primary d-flex align-items-center
-                      justify-content-center text-white flex-shrink-0"
-               style="width:48px;height:48px;font-size:1.2rem;">
-            👥
-          </div>
-        {% elif item.other_user.profile.avatar %}
-          <img src="{{ item.other_user.profile.avatar.url }}"
-               width="48" height="48"
-               class="rounded-circle flex-shrink-0"
-               style="object-fit:cover;" alt="">
-        {% else %}
-          <div class="rounded-circle bg-secondary d-flex align-items-center
-                      justify-content-center text-white flex-shrink-0"
-               style="width:48px;height:48px;">
-            {{ item.other_user.username|first|upper|default:"?" }}
-          </div>
-        {% endif %}
+  <div class="chat-sidebar">
 
+    <div class="p-3 border-bottom">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h1 class="h6 mb-0">Повідомлення</h1>
+        <a href="{% url 'chat_create_group' %}" class="btn btn-outline-primary btn-sm" title="Груповий чат">
+          👥
+        </a>
+      </div>
 
-        <div class="flex-grow-1 min-width-0">
-          <div class="{% if item.unread_count %}fw-semibold{% endif %} text-truncate">
+      <div class="position-relative">
+        <input
+          type="text"
+          id="sidebar-chat-search"
+          class="form-control form-control-sm"
+          placeholder="Пошук"
+          autocomplete="off"
+          data-mention-url="{% url 'mention_suggest' %}"
+        >
+        <div id="sidebar-search-results"
+             class="list-group position-absolute w-100 d-none"
+             style="z-index:1000; max-height:260px; overflow-y:auto;"></div>
+      </div>
+    </div>
+
+    <div class="chat-sidebar-list">
+      {% if chat_data %}
+        {% for item in chat_data %}
+          <a href="{% url 'chat_detail' item.chat.pk %}"
+             class="chat-item d-flex align-items-center gap-2 p-2 text-decoration-none text-body border-bottom
+                    {% if active_chat and active_chat.pk == item.chat.pk %}active{% endif %}">
+
             {% if item.chat.is_group %}
-              {{ item.chat.name|default:"Груповий чат" }}
+              <div class="rounded-circle bg-primary d-flex align-items-center
+                          justify-content-center text-white flex-shrink-0"
+                   style="width:44px;height:44px;">👥</div>
+            {% elif item.other_user.profile.avatar %}
+              <img src="{{ item.other_user.profile.avatar.url }}"
+                   width="44" height="44"
+                   class="rounded-circle flex-shrink-0"
+                   style="object-fit:cover;" alt="">
             {% else %}
-              {{ item.other_user.get_full_name|default:item.other_user.username }}
+              <div class="rounded-circle bg-secondary d-flex align-items-center
+                          justify-content-center text-white flex-shrink-0"
+                   style="width:44px;height:44px;">
+                {{ item.other_user.username|first|upper|default:"?" }}
+              </div>
             {% endif %}
-          </div>
-          <div class="text-muted small text-truncate">
-            {% if item.last_message %}
-              {% if item.last_message.sender == user %}Ви: {% endif %}
-              {% if item.last_message.text %}
-                {{ item.last_message.text }}
-              {% elif item.last_message.image %}📷 Фото
-              {% elif item.last_message.video %}🎥 Відео
-              {% elif item.last_message.file %}📎 Файл
-              {% endif %}
-            {% else %}
-              Повідомлень ще немає
+
+            <div class="flex-grow-1 min-width-0">
+              <div class="{% if item.unread_count %}fw-semibold{% endif %} text-truncate small">
+                {% if item.chat.is_group %}
+                  {{ item.chat.name|default:"Груповий чат" }}
+                {% else %}
+                  {{ item.other_user.get_full_name|default:item.other_user.username }}
+                {% endif %}
+              </div>
+              <div class="text-muted text-truncate" style="font-size:0.78rem;">
+                {% if item.last_message %}
+                  {% if item.last_message.sender == user %}Ви: {% endif %}
+                  {% if item.last_message.text %}{{ item.last_message.text }}
+                  {% elif item.last_message.image %}📷 Фото
+                  {% elif item.last_message.video %}🎥 Відео
+                  {% elif item.last_message.file %}📎 Файл
+                  {% endif %}
+                {% else %}
+                  Немає повідомлень
+                {% endif %}
+              </div>
+            </div>
+
+            {% if item.unread_count %}
+              <span class="badge bg-primary rounded-pill flex-shrink-0">{{ item.unread_count }}</span>
             {% endif %}
-          </div>
-        </div>
-
-
-        <div class="text-end flex-shrink-0">
-          {% if item.last_message %}
-            <div class="text-muted small">{{ item.last_message.created_at|date:"d.m H:i" }}</div>
-          {% endif %}
-          {% if item.unread_count %}
-            <span class="badge bg-primary rounded-pill">{{ item.unread_count }}</span>
-          {% endif %}
-        </div>
-
-      </a>
-    {% endfor %}
+          </a>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted small text-center p-3">Чатів ще немає.</p>
+      {% endif %}
+    </div>
   </div>
-{% else %}
-  <div class="text-center text-muted py-5">
-    <p class="mb-2">У вас ще немає повідомлень.</p>
-    <a href="{% url 'chat_new' %}" class="btn btn-primary btn-sm">Написати перше повідомлення</a>
-  </div>
-{% endif %}
 
+
+
+  <div class="chat-main">
+    {% if active_chat %}
+      {% include "chat/_active_chat.html" %}
+    {% else %}
+      <div class="d-flex flex-column align-items-center justify-content-center flex-grow-1 text-center text-muted p-4">
+        <div class="rounded-circle border d-flex align-items-center justify-content-center mb-3"
+             style="width:80px;height:80px;font-size:2rem;">➤</div>
+        <h2 class="h5">Ваші повідомлення</h2>
+        <p class="small mb-3">Надсилайте приватні повідомлення другу або групі</p>
+        <button type="button" class="btn btn-primary btn-sm"
+                onclick="document.getElementById('sidebar-chat-search').focus()">
+          Надіслати повідомлення
+        </button>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'js/chat.js' %}"></script>
 {% endblock %}
