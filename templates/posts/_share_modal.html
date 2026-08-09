@@ -1,0 +1,47 @@
+<div class="modal fade" id="share-modal-{{ post.pk }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Поділитись дописом</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрити"></button>
+      </div>
+      <div class="modal-body">
+        {% if share_chats %}
+          <div class="d-flex flex-column gap-2">
+            {% for item in share_chats %}
+              <form method="post" action="{% url 'post_share' post.pk item.chat.pk %}">
+                {% csrf_token %}
+                <button type="submit"
+                        class="btn btn-outline-secondary w-100 text-start d-flex align-items-center gap-2">
+
+                  {% if item.chat.is_group %}
+                    <div class="rounded-circle bg-primary d-flex align-items-center
+                                justify-content-center text-white flex-shrink-0"
+                         style="width:36px;height:36px;">👥</div>
+                  {% elif item.avatar_user.profile.avatar %}
+                    <img src="{{ item.avatar_user.profile.avatar.url }}"
+                         width="36" height="36"
+                         class="rounded-circle flex-shrink-0"
+                         style="object-fit:cover;" alt="">
+                  {% else %}
+                    <div class="rounded-circle bg-secondary d-flex align-items-center
+                                justify-content-center text-white flex-shrink-0"
+                         style="width:36px;height:36px;">
+                      {{ item.label|first|upper }}
+                    </div>
+                  {% endif %}
+
+                  <span>{{ item.label }}</span>
+                </button>
+              </form>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-muted small mb-0">
+            У вас ще немає чатів. Спочатку напишіть комусь повідомлення.
+          </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>

@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
-from .models import Chat, Message
+from .models import Chat, Message, Post
 from .views import get_friend_ids
 
 
@@ -45,7 +45,7 @@ class ChatListView(LoginRequiredMixin, View):
     def get(self, request):
         chat_data = _build_chat_sidebar_data(request.user)
         return render(request, self.template_name, {
-            'chat_data': chat_data,
+            'chat_data':   chat_data,
             'active_chat': None,
         })
 
@@ -64,7 +64,7 @@ class ChatCreatePrivateView(LoginRequiredMixin, View):
         if existing:
             return redirect('chat_detail', pk=existing.pk)
 
-        chat = Chat.objects.create(is_group=False)
+        chat = Chat.objects.create(is_group=False, creator=request.user)
         chat.participants.add(request.user, target)
         return redirect('chat_detail', pk=chat.pk)
 
@@ -96,7 +96,7 @@ class ChatCreateGroupView(LoginRequiredMixin, View):
                 'error': 'Оберіть хоча б одного друга.',
             })
 
-        chat = Chat.objects.create(name=name, is_group=True)
+        chat = Chat.objects.create(name=name, is_group=True, creator=request.user)
         chat.participants.add(request.user, *participants)
         return redirect('chat_detail', pk=chat.pk)
 
@@ -173,3 +173,44 @@ class ChatMarkReadView(LoginRequiredMixin, View):
 
     def get(self, request, pk):
         return redirect('chat_detail', pk=pk)
+
+
+class ChatLeaveView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        chat = get_object_or_404(Chat, pk=pk, participants=request.user)
+        chat.participants.remove(request.user)
+        if chat.participants.count() == 0:
+            chat.delete()
+        return redirect('chat_list')
+
+    def get(self, request, pk):
+        return redirect('chat_list')
+
+
+class ChatDeleteView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        chat = get_object_or_404(
+            Chat, pk=pk, participants=request.user,
+            is_group=True, creator=request.user,
+        )
+        chat.delete()
+        return redirect('chat_list')
+
+    def get(self, request, pk):
+        return redirect('chat_list')
+
+
+class PostShareView(LoginRequiredMixin, View):
+    def post(self, request, pk, chat_id):
+        post = get_object_or_404(Post, pk=pk)
+        chat = get_object_or_404(Chat, pk=chat_id, participants=request.user)
+
+        Message.objects.create(chat=chat, sender=request.user, shared_post=post)
+
+        referer = request.META.get('HTTP_REFERER')
+        if referer:
+            return redirect(referer)
+        return redirect('post_detail', pk=post.pk)
+
+    def get(self, request, pk, chat_id):
+        return redirect('post_detail', pk=pk)

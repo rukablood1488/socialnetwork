@@ -76,7 +76,6 @@
   {% for post in posts %}
     <div class="border rounded p-3 mb-3">
 
-
       <div class="d-flex align-items-center gap-2 mb-2">
         {% if post.author.profile.avatar %}
           <img src="{{ post.author.profile.avatar.url }}"
@@ -148,8 +147,17 @@
         <a href="{% url 'post_detail' post.pk %}" class="btn btn-sm btn-outline-secondary">
           💬 {{ post.comments.count }}
         </a>
+
+        <button type="button"
+                class="btn btn-sm btn-outline-secondary"
+                data-bs-toggle="modal"
+                data-bs-target="#share-modal-{{ post.pk }}">
+          📤
+        </button>
       </div>
     </div>
+
+    {% include "posts/_share_modal.html" with post=post share_chats=share_chats %}
   {% endfor %}
 {% else %}
   <p class="text-muted">У групі ще немає публікацій.</p>

@@ -18,4 +18,10 @@ chat_urls = [
     path('chat/<int:pk>/message/<int:msg_id>/delete/', views_chat.MessageDeleteView.as_view(), name='message_delete'),
 
     path('chat/<int:pk>/read/', views_chat.ChatMarkReadView.as_view(), name='chat_mark_read'),
+
+    path('chat/<int:pk>/leave/', views_chat.ChatLeaveView.as_view(), name='chat_leave'),
+
+    path('chat/<int:pk>/delete/', views_chat.ChatDeleteView.as_view(), name='chat_delete'),
+
+    path('posts/<int:pk>/share/<int:chat_id>/', views_chat.PostShareView.as_view(), name='post_share'),
 ]

@@ -25,6 +25,29 @@
           </div>
         {% endif %}
 
+        {% if msg.shared_post %}
+          <a href="{% url 'post_detail' msg.shared_post.pk %}"
+             class="d-block rounded overflow-hidden mb-1 text-decoration-none
+                    {% if msg.sender == user %}text-white{% else %}text-body{% endif %}"
+             style="border:1px solid rgba(128,128,128,0.3); max-width:220px;">
+            {% if msg.shared_post.media_type == 'video' %}
+              <video muted class="w-100 d-block" style="max-height:180px; object-fit:cover;">
+                <source src="{{ msg.shared_post.video.url }}">
+              </video>
+            {% else %}
+              <img src="{{ msg.shared_post.image.url }}"
+                   class="w-100 d-block"
+                   style="max-height:180px; object-fit:cover;" alt="">
+            {% endif %}
+            <div class="p-2 small">
+              <span class="fw-semibold">@{{ msg.shared_post.author.username }}</span>
+              {% if msg.shared_post.text %}
+                <div class="text-truncate">{{ msg.shared_post.text }}</div>
+              {% endif %}
+            </div>
+          </a>
+        {% endif %}
+
         {% if msg.image %}
           <img src="{{ msg.image.url }}" class="img-fluid rounded mb-1" style="max-height:240px;" alt="">
         {% endif %}

@@ -45,7 +45,6 @@
 {% block content %}
 <div class="row border rounded overflow-hidden g-0">
 
-  {# ЛІВА КОЛОНКА #}
   <div class="col-12 col-md-7 post-media-col">
     {% if post.media_type == 'video' %}
       <video controls autoplay muted loop>
@@ -56,7 +55,7 @@
     {% endif %}
   </div>
 
-  {# ПРАВА КОЛОНКА #}
+
   <div class="col-12 col-md-5 post-side-col bg-body">
 
     <div class="d-flex align-items-start gap-2 p-3 border-bottom">
@@ -100,7 +99,6 @@
 
     <div class="post-comments-scroll p-3">
 
-
       {% if comments %}
         {% for comment in comments %}
           {% include "posts/_comment.html" with comment=comment depth=0 %}
@@ -142,7 +140,17 @@
         <span class="btn btn-sm btn-outline-secondary disabled">
           💬 {{ post.comments.count }}
         </span>
+
+        {% if user.is_authenticated %}
+          <button type="button"
+                  class="btn btn-sm btn-outline-secondary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#share-modal-{{ post.pk }}">
+            📤
+          </button>
+        {% endif %}
       </div>
+
 
       {% if user.is_authenticated %}
         <form method="post" action="{% url 'comment_create' post.pk %}" class="d-flex gap-2">
@@ -161,4 +169,8 @@
 
   </div>
 </div>
+
+{% if user.is_authenticated %}
+  {% include "posts/_share_modal.html" with post=post share_chats=share_chats %}
+{% endif %}
 {% endblock %}

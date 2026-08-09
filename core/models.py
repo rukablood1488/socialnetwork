@@ -358,6 +358,14 @@ class Chat(models.Model):
         related_name='chats',
         verbose_name='Учасники',
     )
+    creator = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name='created_chats', 
+        verbose_name='Створив(ла)',
+    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name='Дата створення',
@@ -418,6 +426,14 @@ class Message(models.Model):
     is_read = models.BooleanField(
         default=False,
         verbose_name='Прочитано',
+    )
+    shared_post = models.ForeignKey(
+        'Post', 
+        on_delete=models.CASCADE, 
+        null=True, 
+        blank=True,
+        related_name='shared_in_messages', 
+        verbose_name='Поширений допис',
     )
 
     class Meta:
