@@ -38,9 +38,6 @@
               <a class="nav-link" href="{% url 'group_list' %}">Групи</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'chat_list' %}">Повідомлення</a>
-            </li>
-            <li class="nav-item">
               <a class="nav-link" href="{% url 'notifications' %}">
                 Сповіщення
                 {% if unread_notifications_count %}
@@ -89,9 +86,26 @@
     </div>
   {% endif %}
 
+  
   <main class="container">
     {% block content %}{% endblock %}
   </main>
+
+
+  {% if user.is_authenticated and request.resolver_match.url_name != 'chat_list' and request.resolver_match.url_name != 'chat_detail' %}
+    <a href="{% url 'chat_list' %}"
+       class="btn btn-primary rounded-circle shadow d-flex align-items-center justify-content-center position-fixed"
+       style="bottom:24px; right:24px; width:56px; height:56px; z-index:1040; font-size:1.4rem;"
+       title="Повідомлення">
+      ✉️
+      {% if unread_messages_count %}
+        <span class="badge bg-danger rounded-pill position-absolute"
+              style="top:-4px; right:-4px; font-size:0.7rem;">
+          {{ unread_messages_count }}
+        </span>
+      {% endif %}
+    </a>
+  {% endif %}
 
   <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">

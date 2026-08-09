@@ -42,6 +42,26 @@ def can_view_user_content(viewer, target_user):
     ).exists()
 
 
+def get_shareable_chats(user):
+    chats = Chat.objects.filter(
+        participants=user,
+    ).prefetch_related('participants', 'participants__profile').distinct()
+ 
+    result = []
+    for chat in chats:
+        if chat.is_group:
+            label = chat.name or 'Груповий чат'
+            avatar_user = None
+        else:
+            other = chat.participants.exclude(pk=user.pk).first()
+            label = other.username if other else 'Чат'
+            avatar_user = other
+ 
+        result.append({'chat': chat, 'label': label, 'avatar_user': avatar_user})
+ 
+    return result
+
+
 # АВТЕНТИФІКАЦІЯ
 
 class RegisterView(View):
@@ -284,6 +304,11 @@ class PostDetailView(View):
  
     def get(self, request, pk):
         post = get_object_or_404(Post, pk=pk)
+ 
+        if not can_view_user_content(request.user, post.author):
+            messages.error(request, 'Цей допис недоступний — акаунт приватний.')
+            return redirect('feed')
+ 
         comments = post.comments.filter(
             parent__isnull=True,
         ).select_related('author').prefetch_related('replies__author')
@@ -291,9 +316,11 @@ class PostDetailView(View):
  
         user_liked = False
         user_reposted = False
+        share_chats = []
         if request.user.is_authenticated:
             user_liked = post.likes.filter(user=request.user).exists()
             user_reposted = post.reposts.filter(user=request.user).exists()
+            share_chats = get_shareable_chats(request.user)
  
         return render(request, self.template_name, {
             'post': post,
@@ -303,6 +330,7 @@ class PostDetailView(View):
             'repost_count': post.reposts.count(),
             'user_liked': user_liked,
             'user_reposted': user_reposted,
+            'share_chats': share_chats,
         })
  
  
@@ -391,11 +419,24 @@ class CommentDeleteView(LoginRequiredMixin, View):
 
 class FeedView(LoginRequiredMixin, View):
     template_name = 'feed/index.html'
-
+ 
     def get(self, request):
-
+        private_author_ids = set(
+            User.objects.filter(
+                profile__is_private=True,
+            ).exclude(pk=request.user.pk).values_list('pk', flat=True)
+        )
+        accepted_following_ids = set(
+            Subscription.objects.filter(
+                follower=request.user, status=Subscription.Status.ACCEPTED,
+            ).values_list('following_id', flat=True)
+        )
+        hidden_author_ids = private_author_ids - accepted_following_ids
+ 
         posts = Post.objects.filter(
             group__isnull=True,
+        ).exclude(
+            author_id__in=hidden_author_ids,
         ).select_related(
             'author',
             'author__profile',
@@ -404,14 +445,16 @@ class FeedView(LoginRequiredMixin, View):
             'reposts',
             'comments',
         ).order_by('-created_at')
-
+ 
         liked_ids = set(request.user.likes.values_list('post_id', flat=True))
         reposted_ids = set(request.user.reposts.values_list('post_id', flat=True))
-
+        share_chats = get_shareable_chats(request.user)
+ 
         return render(request, self.template_name, {
             'posts': posts,
             'liked_ids': liked_ids,
             'reposted_ids': reposted_ids,
+            'share_chats': share_chats,
         })
 
 
@@ -563,10 +606,10 @@ class GroupCreateView(LoginRequiredMixin, View):
 
 class GroupDetailView(LoginRequiredMixin, View):
     template_name = 'groups/detail.html'
-
+ 
     def get(self, request, pk):
         group = get_object_or_404(Group, pk=pk)
-
+ 
         posts = group.posts.select_related(
             'author',
             'author__profile',
@@ -575,20 +618,21 @@ class GroupDetailView(LoginRequiredMixin, View):
             'reposts',
             'comments',
         ).order_by('-created_at')
-
+ 
         membership = GroupMembership.objects.filter(
             group=group,
             user=request.user,
         ).first()
-
+ 
         is_member = membership is not None
         is_admin = membership is not None and membership.role == GroupMembership.Role.ADMIN
         is_creator = group.creator_id == request.user.id
-
+ 
         members_count = group.memberships.count()
         liked_ids = set(request.user.likes.values_list('post_id', flat=True))
         reposted_ids = set(request.user.reposts.values_list('post_id', flat=True))
-
+        share_chats = get_shareable_chats(request.user)
+ 
         return render(request, self.template_name, {
             'group': group,
             'posts': posts,
@@ -598,6 +642,7 @@ class GroupDetailView(LoginRequiredMixin, View):
             'members_count': members_count,
             'liked_ids': liked_ids,
             'reposted_ids': reposted_ids,
+            'share_chats': share_chats,
         })
 
 

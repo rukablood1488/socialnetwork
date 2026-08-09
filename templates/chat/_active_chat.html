@@ -3,6 +3,26 @@
     <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white flex-shrink-0"
          style="width:36px;height:36px;">👥</div>
     <span class="fw-semibold">{{ active_chat.name|default:"Груповий чат" }}</span>
+
+    <div class="ms-auto d-flex gap-2">
+      <form method="post" action="{% url 'chat_leave' active_chat.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-secondary btn-sm"
+                onclick="return confirm('Вийти з групового чату?')">
+          Вийти
+        </button>
+      </form>
+
+      {% if active_chat.creator_id == request.user.id %}
+        <form method="post" action="{% url 'chat_delete' active_chat.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-outline-danger btn-sm"
+                  onclick="return confirm('Видалити чат для всіх учасників? Це незворотно.')">
+            Видалити
+          </button>
+        </form>
+      {% endif %}
+    </div>
   {% else %}
     {% if other_user.profile.avatar %}
       <img src="{{ other_user.profile.avatar.url }}"

@@ -76,7 +76,9 @@
             <p class="mb-2">{{ post.text|linkify_mentions }}</p>
           {% endif %}
 
+
           <div class="d-flex gap-2 pt-2 border-top">
+
 
             <form method="post" action="{% url 'post_like' post.pk %}">
               {% csrf_token %}
@@ -85,6 +87,7 @@
                 ❤️ {{ post.likes.count }}
               </button>
             </form>
+
 
             {% if user != post.author %}
               <form method="post" action="{% url 'post_repost' post.pk %}">
@@ -105,8 +108,18 @@
               💬 {{ post.comments.count }}
             </a>
 
+
+            <button type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#share-modal-{{ post.pk }}">
+              📤
+            </button>
+
           </div>
         </div>
+
+        {% include "posts/_share_modal.html" with post=post share_chats=share_chats %}
       {% endfor %}
     {% else %}
       <div class="text-center text-muted py-5">
@@ -123,7 +136,7 @@
 
   </div>
 
-
+  
   <div class="col-md-4 d-none d-md-block">
     <div class="border rounded p-3 mb-3">
       <h2 class="h6 mb-3">Мій профіль</h2>

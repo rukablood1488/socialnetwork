@@ -29,8 +29,46 @@
     flex-direction: column;
     min-width: 0;
   }
-  .chat-item.active {
+  .chat-item-row {
+    position: relative;
+    border-bottom: 1px solid var(--bs-border-color);
+  }
+  .chat-item-row.active {
     background: var(--bs-tertiary-bg, #f1f1f1);
+  }
+  .chat-item-row:hover {
+    background: var(--bs-tertiary-bg, #f8f9fa);
+  }
+  .chat-item-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    padding-right: 2.2rem;
+    text-decoration: none;
+    color: inherit;
+  }
+  .chat-remove-form {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    transform: translateY(-50%);
+    margin: 0;
+  }
+  .chat-remove-btn {
+    opacity: 0;
+    transition: opacity .15s;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    line-height: 1;
+    font-size: 0.85rem;
+  }
+  .chat-item-row:hover .chat-remove-btn {
+    opacity: 1;
+  }
+  .chat-item-row:hover .chat-unread-badge {
+    display: none;
   }
   @media (max-width: 767px) {
     .chat-shell { flex-direction: column; height: auto; }
@@ -76,53 +114,68 @@
     <div class="chat-sidebar-list">
       {% if chat_data %}
         {% for item in chat_data %}
-          <a href="{% url 'chat_detail' item.chat.pk %}"
-             class="chat-item d-flex align-items-center gap-2 p-2 text-decoration-none text-body border-bottom
-                    {% if active_chat and active_chat.pk == item.chat.pk %}active{% endif %}">
+          <div class="chat-item-row {% if active_chat and active_chat.pk == item.chat.pk %}active{% endif %}">
 
-            {% if item.chat.is_group %}
-              <div class="rounded-circle bg-primary d-flex align-items-center
-                          justify-content-center text-white flex-shrink-0"
-                   style="width:44px;height:44px;">👥</div>
-            {% elif item.other_user.profile.avatar %}
-              <img src="{{ item.other_user.profile.avatar.url }}"
-                   width="44" height="44"
-                   class="rounded-circle flex-shrink-0"
-                   style="object-fit:cover;" alt="">
-            {% else %}
-              <div class="rounded-circle bg-secondary d-flex align-items-center
-                          justify-content-center text-white flex-shrink-0"
-                   style="width:44px;height:44px;">
-                {{ item.other_user.username|first|upper|default:"?" }}
-              </div>
-            {% endif %}
+            <a href="{% url 'chat_detail' item.chat.pk %}" class="chat-item-link">
 
-            <div class="flex-grow-1 min-width-0">
-              <div class="{% if item.unread_count %}fw-semibold{% endif %} text-truncate small">
-                {% if item.chat.is_group %}
-                  {{ item.chat.name|default:"Груповий чат" }}
-                {% else %}
-                  {{ item.other_user.get_full_name|default:item.other_user.username }}
-                {% endif %}
-              </div>
-              <div class="text-muted text-truncate" style="font-size:0.78rem;">
-                {% if item.last_message %}
-                  {% if item.last_message.sender == user %}Ви: {% endif %}
-                  {% if item.last_message.text %}{{ item.last_message.text }}
-                  {% elif item.last_message.image %}📷 Фото
-                  {% elif item.last_message.video %}🎥 Відео
-                  {% elif item.last_message.file %}📎 Файл
+              {% if item.chat.is_group %}
+                <div class="rounded-circle bg-primary d-flex align-items-center
+                            justify-content-center text-white flex-shrink-0"
+                     style="width:44px;height:44px;">👥</div>
+              {% elif item.other_user.profile.avatar %}
+                <img src="{{ item.other_user.profile.avatar.url }}"
+                     width="44" height="44"
+                     class="rounded-circle flex-shrink-0"
+                     style="object-fit:cover;" alt="">
+              {% else %}
+                <div class="rounded-circle bg-secondary d-flex align-items-center
+                            justify-content-center text-white flex-shrink-0"
+                     style="width:44px;height:44px;">
+                  {{ item.other_user.username|first|upper|default:"?" }}
+                </div>
+              {% endif %}
+
+              <div class="flex-grow-1 min-width-0">
+                <div class="{% if item.unread_count %}fw-semibold{% endif %} text-truncate small">
+                  {% if item.chat.is_group %}
+                    {{ item.chat.name|default:"Груповий чат" }}
+                  {% else %}
+                    {{ item.other_user.get_full_name|default:item.other_user.username }}
                   {% endif %}
-                {% else %}
-                  Немає повідомлень
-                {% endif %}
+                </div>
+                <div class="text-muted text-truncate" style="font-size:0.78rem;">
+                  {% if item.last_message %}
+                    {% if item.last_message.sender == user %}Ви: {% endif %}
+                    {% if item.last_message.text %}{{ item.last_message.text }}
+                    {% elif item.last_message.shared_post %}📤 Допис
+                    {% elif item.last_message.image %}📷 Фото
+                    {% elif item.last_message.video %}🎥 Відео
+                    {% elif item.last_message.file %}📎 Файл
+                    {% endif %}
+                  {% else %}
+                    Немає повідомлень
+                  {% endif %}
+                </div>
               </div>
-            </div>
 
-            {% if item.unread_count %}
-              <span class="badge bg-primary rounded-pill flex-shrink-0">{{ item.unread_count }}</span>
-            {% endif %}
-          </a>
+              {% if item.unread_count %}
+                <span class="badge bg-primary rounded-pill flex-shrink-0 chat-unread-badge">
+                  {{ item.unread_count }}
+                </span>
+              {% endif %}
+            </a>
+
+            <form method="post" action="{% url 'chat_leave' item.chat.pk %}" class="chat-remove-form">
+              {% csrf_token %}
+              <button type="submit"
+                      class="btn btn-light rounded-circle chat-remove-btn"
+                      title="Прибрати з панелі"
+                      onclick="return confirm('{% if item.chat.is_group %}Вийти з групового чату?{% else %}Прибрати чат зі списку?{% endif %}')">
+                ✕
+              </button>
+            </form>
+
+          </div>
         {% endfor %}
       {% else %}
         <p class="text-muted small text-center p-3">Чатів ще немає.</p>
@@ -130,8 +183,7 @@
     </div>
   </div>
 
-
-
+  
   <div class="chat-main">
     {% if active_chat %}
       {% include "chat/_active_chat.html" %}
