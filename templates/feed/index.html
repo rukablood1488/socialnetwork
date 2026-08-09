@@ -8,11 +8,6 @@
 
   <div class="col-12 col-md-8">
 
-    <div class="border rounded p-3 mb-4">
-      <a href="{% url 'post_create' %}" class="btn btn-primary w-100">
-        + Нова публікація
-      </a>
-    </div>
 
     {% if posts %}
       {% for post in posts %}
@@ -103,6 +98,7 @@
               </span>
             {% endif %}
 
+
             <a href="{% url 'post_detail' post.pk %}"
                class="btn btn-sm btn-outline-secondary">
               💬 {{ post.comments.count }}
@@ -136,7 +132,7 @@
 
   </div>
 
-  
+
   <div class="col-md-4 d-none d-md-block">
     <div class="border rounded p-3 mb-3">
       <h2 class="h6 mb-3">Мій профіль</h2>
@@ -172,6 +168,14 @@
         <li class="mt-1"><a href="{% url 'chat_list' %}" class="text-decoration-none">💬 Чат</a></li>
         <li class="mt-1"><a href="{% url 'notifications' %}" class="text-decoration-none">🔔 Сповіщення</a></li>
       </ul>
+    </div>
+
+    
+    <div class="text-muted small px-1">
+      <p class="mb-2">
+        Про нас · Довідка · Умови використання · Конфіденційність
+      </p>
+      <p class="mb-0">© SocialNet, {% now "Y" %}</p>
     </div>
   </div>
 
