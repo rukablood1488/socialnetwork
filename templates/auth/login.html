@@ -1,69 +1,65 @@
-{% extends "base.html" %}
+{% extends "auth/_auth_base.html" %}
 
-{% block title %}Вхід — SocialNet{% endblock %}
+{% block title %}Увійти — SocialNet{% endblock %}
 
-{% block content %}
-<div class="row justify-content-center">
-  <div class="col-12 col-sm-8 col-md-5">
+{% block auth_form %}
+  <div class="text-center mb-4">
+    <svg class="icon mb-2" width="40" height="40"><use href="#icon-diamond"></use></svg>
+    <h1 class="h5 mb-0">Увійти в SocialNet</h1>
+  </div>
 
-    <h1 class="h4 mb-4">Увійти</h1>
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger py-2">
+      {% for error in form.non_field_errors %}
+        <div class="small">{{ error }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
 
-    {% if form.non_field_errors %}
-      <div class="alert alert-danger">
-        {% for error in form.non_field_errors %}
-          <div>{{ error }}</div>
-        {% endfor %}
-      </div>
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    {% if request.GET.next %}
+      <input type="hidden" name="next" value="{{ request.GET.next }}">
     {% endif %}
 
-    <form method="post" novalidate>
-      {% csrf_token %}
+    
+    <div class="mb-3">
+      <input
+        type="text"
+        name="{{ form.username.html_name }}"
+        id="{{ form.username.id_for_label }}"
+        value="{{ form.username.value|default:'' }}"
+        class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+        placeholder="Імʼя користувача"
+        autofocus
+      >
+      {% for error in form.username.errors %}
+        <div class="invalid-feedback">{{ error }}</div>
+      {% endfor %}
+    </div>
 
-      {% if request.GET.next %}
-        <input type="hidden" name="next" value="{{ request.GET.next }}">
-      {% endif %}
+    
+    <div class="mb-3">
+      <input
+        type="password"
+        name="{{ form.password.html_name }}"
+        id="{{ form.password.id_for_label }}"
+        class="form-control {% if form.password.errors %}is-invalid{% endif %}"
+        placeholder="Пароль"
+      >
+      {% for error in form.password.errors %}
+        <div class="invalid-feedback">{{ error }}</div>
+      {% endfor %}
+    </div>
 
-      <div class="mb-3">
-        <label for="{{ form.username.id_for_label }}" class="form-label">
-          {{ form.username.label }}
-        </label>
-        <input
-          type="text"
-          name="{{ form.username.html_name }}"
-          id="{{ form.username.id_for_label }}"
-          value="{{ form.username.value|default:'' }}"
-          class="form-control {% if form.username.errors %}is-invalid{% endif %}"
-          placeholder="john_doe"
-          autofocus
-        >
-        {% for error in form.username.errors %}
-          <div class="invalid-feedback">{{ error }}</div>
-        {% endfor %}
-      </div>
+    <button type="submit" class="btn btn-primary w-100">Увійти</button>
+  </form>
+{% endblock %}
 
-      <div class="mb-4">
-        <label for="{{ form.password.id_for_label }}" class="form-label">
-          {{ form.password.label }}
-        </label>
-        <input
-          type="password"
-          name="{{ form.password.html_name }}"
-          id="{{ form.password.id_for_label }}"
-          class="form-control {% if form.password.errors %}is-invalid{% endif %}"
-          placeholder="••••••••"
-        >
-        {% for error in form.password.errors %}
-          <div class="invalid-feedback">{{ error }}</div>
-        {% endfor %}
-      </div>
-
-      <button type="submit" class="btn btn-primary w-100">Увійти</button>
-    </form>
-
-    <p class="mt-3 text-center small">
-      Ще немає акаунту? <a href="{% url 'register' %}">Зареєструватись</a>
-    </p>
-
-  </div>
-</div>
+{% block auth_secondary %}
+  <span class="small">Ще немає акаунту?</span>
+  <a href="{% url 'register' %}" class="small fw-semibold text-decoration-none ms-1">
+    Зареєструватись
+  </a>
 {% endblock %}
