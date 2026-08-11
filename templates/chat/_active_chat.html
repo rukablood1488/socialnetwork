@@ -1,7 +1,9 @@
 <div class="d-flex align-items-center gap-2 p-3 border-bottom flex-shrink-0">
   {% if active_chat.is_group %}
     <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white flex-shrink-0"
-         style="width:36px;height:36px;">👥</div>
+         style="width:36px;height:36px;">
+         <svg class="icon" width="20" height="20"><use href="#icon-users"></use></svg>
+    </div>
     <span class="fw-semibold">{{ active_chat.name|default:"Груповий чат" }}</span>
 
     <div class="ms-auto d-flex gap-2">
@@ -55,11 +57,11 @@
   {% csrf_token %}
 
   <label class="btn btn-outline-secondary btn-sm mb-0" title="Додати файл">
-    📎
+    <svg class="icon" width="20" height="20"><use href="#icon-paperclip"></use></svg>
     <input type="file" name="file" class="d-none">
   </label>
   <label class="btn btn-outline-secondary btn-sm mb-0" title="Додати фото">
-    🖼️
+    <svg class="icon" width="20" height="20"><use href="#icon-image"></use></svg>
     <input type="file" name="image" accept="image/*" class="d-none">
   </label>
 
@@ -70,5 +72,7 @@
     placeholder="Написати повідомлення..."
     autocomplete="off"
   >
-  <button type="submit" class="btn btn-primary btn-sm">➤</button>
+  <button type="submit" class="btn btn-primary btn-sm">
+    <svg class="icon" width="20" height="20"><use href="#icon-send"></use></svg>
+  </button>
 </form>
