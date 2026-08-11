@@ -41,14 +41,16 @@
           <form method="post" action="{% url 'subscription_accept' sub.pk %}">
             {% csrf_token %}
             <button type="submit" class="btn btn-primary btn-sm">
-              ✓ Підтвердити
+              <svg class="icon" width="20" height="20"><use href="#icon-check"></use></svg>
+              Підтвердити
             </button>
           </form>
 
           <form method="post" action="{% url 'subscription_decline' sub.pk %}">
             {% csrf_token %}
             <button type="submit" class="btn btn-outline-danger btn-sm">
-              ✕ Відхилити
+              <svg class="icon" width="20" height="20"><use href="#icon-x"></use></svg>
+              Відхилити
             </button>
           </form>
         </div>

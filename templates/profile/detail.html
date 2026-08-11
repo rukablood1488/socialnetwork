@@ -33,7 +33,10 @@
         {{ profile_user.get_full_name|default:profile_user.username }}
       </h1>
       {% if profile_user.profile.is_private %}
-        <span class="badge bg-secondary">🔒 Приватний</span>
+        <span class="badge bg-secondary">
+          <svg class="icon" width="20" height="20"><use href="#icon-lock"></use></svg>
+          Приватний
+        </span>
       {% endif %}
     </div>
     <p class="text-muted mb-0">@{{ profile_user.username }}</p>
@@ -48,7 +51,8 @@
 
 {% if profile_user.profile.birth_date %}
   <p class="text-muted small mb-2">
-    🎂 {{ profile_user.profile.birth_date|date:"d.m.Y" }}
+    <svg class="icon" width="20" height="20"><use href="#icon-cake"></use></svg>
+    {{ profile_user.profile.birth_date|date:"d.m.Y" }}
   </p>
 {% endif %}
 
@@ -101,7 +105,10 @@
 
 
     {% if is_friend %}
-      <span class="badge bg-success">🤝 Друзі</span>
+      <span class="badge bg-success">
+        <svg class="icon" width="20" height="20"><use href="#icon-handshake"></use></svg> 
+        Друзі
+      </span>
     {% endif %}
 
   </div>
@@ -114,7 +121,9 @@
 
 {% if is_locked %}
   <div class="text-center text-muted py-5">
-    <p style="font-size:2rem;" class="mb-2">🔒</p>
+    <p style="font-size:2rem;" class="mb-2">
+      <svg class="icon" width="20" height="20"><use href="#icon-lock"></use></svg>
+    </p>
     <p class="mb-1">Цей акаунт приватний.</p>
     <p class="small">
       {% if is_pending %}

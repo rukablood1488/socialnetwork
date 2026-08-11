@@ -92,7 +92,7 @@
       <div class="d-flex justify-content-between align-items-center mb-2">
         <h1 class="h6 mb-0">Повідомлення</h1>
         <a href="{% url 'chat_create_group' %}" class="btn btn-outline-primary btn-sm" title="Груповий чат">
-          👥
+          <svg class="icon" width="20" height="20"><use href="#icon-users"></use></svg>
         </a>
       </div>
 
@@ -121,7 +121,9 @@
               {% if item.chat.is_group %}
                 <div class="rounded-circle bg-primary d-flex align-items-center
                             justify-content-center text-white flex-shrink-0"
-                     style="width:44px;height:44px;">👥</div>
+                     style="width:44px;height:44px;">
+                     <svg class="icon" width="20" height="20"><use href="#icon-users"></use></svg>
+                  </div>
               {% elif item.other_user.profile.avatar %}
                 <img src="{{ item.other_user.profile.avatar.url }}"
                      width="44" height="44"
@@ -147,10 +149,10 @@
                   {% if item.last_message %}
                     {% if item.last_message.sender == user %}Ви: {% endif %}
                     {% if item.last_message.text %}{{ item.last_message.text }}
-                    {% elif item.last_message.shared_post %}📤 Допис
-                    {% elif item.last_message.image %}📷 Фото
-                    {% elif item.last_message.video %}🎥 Відео
-                    {% elif item.last_message.file %}📎 Файл
+                    {% elif item.last_message.shared_post %}<svg class="icon" width="20" height="20"><use href="#icon-share-2"></use></svg> Допис
+                    {% elif item.last_message.image %}<svg class="icon" width="20" height="20"><use href="#icon-camera"></use></svg> Фото
+                    {% elif item.last_message.video %}<svg class="icon" width="20" height="20"><use href="#icon-video"></use></svg> Відео
+                    {% elif item.last_message.file %}<svg class="icon" width="20" height="20"><use href="#icon-paperclip"></use></svg> Файл
                     {% endif %}
                   {% else %}
                     Немає повідомлень
@@ -190,7 +192,9 @@
     {% else %}
       <div class="d-flex flex-column align-items-center justify-content-center flex-grow-1 text-center text-muted p-4">
         <div class="rounded-circle border d-flex align-items-center justify-content-center mb-3"
-             style="width:80px;height:80px;font-size:2rem;">➤</div>
+             style="width:80px;height:80px;font-size:2rem;">
+             <svg class="icon" width="20" height="20"><use href="#icon-send"></use></svg>
+        </div>
         <h2 class="h5">Ваші повідомлення</h2>
         <p class="small mb-3">Надсилайте приватні повідомлення другу або групі</p>
         <button type="button" class="btn btn-primary btn-sm"

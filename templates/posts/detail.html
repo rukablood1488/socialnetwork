@@ -87,11 +87,15 @@
 
       {% if post.author == user or user.is_staff %}
         <div class="d-flex gap-1 flex-shrink-0">
-          <a href="{% url 'post_edit' post.pk %}" class="btn btn-outline-secondary btn-sm">✏️</a>
+          <a href="{% url 'post_edit' post.pk %}" class="btn btn-outline-secondary btn-sm">
+            <svg class="icon" width="20" height="20"><use href="#icon-pencil"></use></svg>
+          </a>
           <form method="post" action="{% url 'post_delete' post.pk %}">
             {% csrf_token %}
             <button type="submit" class="btn btn-outline-danger btn-sm"
-                    onclick="return confirm('Видалити публікацію?')">🗑</button>
+                    onclick="return confirm('Видалити публікацію?')">
+                    <svg class="icon" width="20" height="20"><use href="#icon-trash-2"></use></svg>
+            </button>
           </form>
         </div>
       {% endif %}
@@ -118,11 +122,15 @@
             {% csrf_token %}
             <button type="submit"
                     class="btn btn-sm {% if user_liked %}btn-danger{% else %}btn-outline-danger{% endif %}">
-              ❤️ {{ likes_count }}
+              <svg class="icon" width="20" height="20"><use href="#icon-heart"></use></svg>
+              {{ likes_count }}
             </button>
           </form>
         {% else %}
-          <span class="btn btn-sm btn-outline-danger disabled">❤️ {{ likes_count }}</span>
+          <span class="btn btn-sm btn-outline-danger disabled">
+            <svg class="icon" width="20" height="20"><use href="#icon-heart"></use></svg>
+            {{ likes_count }}
+          </span>
         {% endif %}
 
         {% if user.is_authenticated and user != post.author %}
@@ -130,15 +138,20 @@
             {% csrf_token %}
             <button type="submit"
                     class="btn btn-sm {% if user_reposted %}btn-success{% else %}btn-outline-success{% endif %}">
-              🔁 {{ repost_count }}
+              <svg class="icon" width="20" height="20"><use href="#icon-repeat-2"></use></svg>
+              {{ repost_count }}
             </button>
           </form>
         {% else %}
-          <span class="btn btn-sm btn-outline-success disabled">🔁 {{ repost_count }}</span>
+          <span class="btn btn-sm btn-outline-success disabled">
+            <svg class="icon" width="20" height="20"><use href="#icon-repeat-2"></use></svg>
+            {{ repost_count }}
+          </span>
         {% endif %}
 
         <span class="btn btn-sm btn-outline-secondary disabled">
-          💬 {{ post.comments.count }}
+          <svg class="icon" width="20" height="20"><use href="#icon-message-circle"></use></svg> 
+          {{ post.comments.count }}
         </span>
 
         {% if user.is_authenticated %}
@@ -146,7 +159,7 @@
                   class="btn btn-sm btn-outline-secondary"
                   data-bs-toggle="modal"
                   data-bs-target="#share-modal-{{ post.pk }}">
-            📤
+            <svg class="icon" width="20" height="20"><use href="#icon-share-2"></use></svg>
           </button>
         {% endif %}
       </div>
@@ -162,7 +175,9 @@
             placeholder="Додати коментар..."
             required
           >
-          <button type="submit" class="btn btn-primary btn-sm">➤</button>
+          <button type="submit" class="btn btn-primary btn-sm">
+            <svg class="icon" width="20" height="20"><use href="#icon-send"></use></svg>
+          </button>
         </form>
       {% endif %}
     </div>

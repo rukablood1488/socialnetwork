@@ -17,7 +17,9 @@
                   {% if item.chat.is_group %}
                     <div class="rounded-circle bg-primary d-flex align-items-center
                                 justify-content-center text-white flex-shrink-0"
-                         style="width:36px;height:36px;">👥</div>
+                         style="width:36px;height:36px;">
+                         <svg class="icon" width="20" height="20"><use href="#icon-users"></use></svg>
+                    </div>
                   {% elif item.avatar_user.profile.avatar %}
                     <img src="{{ item.avatar_user.profile.avatar.url }}"
                          width="36" height="36"

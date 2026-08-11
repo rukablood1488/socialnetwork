@@ -41,7 +41,9 @@
 
         <div class="d-flex align-items-center gap-2 flex-shrink-0">
           {% if membership.user_id == group.creator_id %}
-            <span class="badge bg-warning text-dark">👑 Засновник</span>
+            <span class="badge bg-warning text-dark">
+              <svg class="icon" width="20" height="20"><use href="#icon-crown"></use></svg> 
+            Засновник</span>
           {% elif membership.role == 'admin' %}
             <span class="badge bg-primary">Адміністратор</span>
           {% endif %}

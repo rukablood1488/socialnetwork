@@ -24,7 +24,8 @@
       </a>
     </p>
     <a href="{% url 'group_members' group.pk %}" class="text-decoration-none small">
-      👥 {{ members_count }} учасників
+      <svg class="icon" width="20" height="20"><use href="#icon-users"></use></svg>
+      {{ members_count }} учасників
     </a>
   </div>
 
@@ -100,11 +101,15 @@
 
         {% if post.author == user or user.is_staff %}
           <div class="ms-auto d-flex gap-1">
-            <a href="{% url 'post_edit' post.pk %}" class="btn btn-outline-secondary btn-sm">✏️</a>
+            <a href="{% url 'post_edit' post.pk %}" class="btn btn-outline-secondary btn-sm">
+              <svg class="icon" width="20" height="20"><use href="#icon-pencil"></use></svg>
+            </a>
             <form method="post" action="{% url 'post_delete' post.pk %}">
               {% csrf_token %}
               <button type="submit" class="btn btn-outline-danger btn-sm"
-                      onclick="return confirm('Видалити?')">🗑</button>
+                      onclick="return confirm('Видалити?')">
+                      <svg class="icon" width="20" height="20"><use href="#icon-trash-2"></use></svg>
+              </button>
             </form>
           </div>
         {% endif %}
@@ -130,7 +135,8 @@
           {% csrf_token %}
           <button type="submit"
                   class="btn btn-sm {% if post.pk in liked_ids %}btn-danger{% else %}btn-outline-danger{% endif %}">
-            ❤️ {{ post.likes.count }}
+            <svg class="icon" width="20" height="20"><use href="#icon-heart"></use></svg>
+            {{ post.likes.count }}
           </button>
         </form>
 
@@ -139,20 +145,22 @@
             {% csrf_token %}
             <button type="submit"
                     class="btn btn-sm {% if post.pk in reposted_ids %}btn-success{% else %}btn-outline-success{% endif %}">
-              🔁 {{ post.reposts.count }}
+              <svg class="icon" width="20" height="20"><use href="#icon-repeat-2"></use></svg>
+              {{ post.reposts.count }}
             </button>
           </form>
         {% endif %}
 
         <a href="{% url 'post_detail' post.pk %}" class="btn btn-sm btn-outline-secondary">
-          💬 {{ post.comments.count }}
+          <svg class="icon" width="20" height="20"><use href="#icon-message-circle"></use></svg>
+          {{ post.comments.count }}
         </a>
 
         <button type="button"
                 class="btn btn-sm btn-outline-secondary"
                 data-bs-toggle="modal"
                 data-bs-target="#share-modal-{{ post.pk }}">
-          📤
+          <svg class="icon" width="20" height="20"><use href="#icon-share-2"></use></svg>
         </button>
       </div>
     </div>

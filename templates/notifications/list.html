@@ -29,13 +29,13 @@
         >
 
           <span style="font-size:1.4rem;" class="flex-shrink-0">
-            {% if notif.notification_type == 'like' %}❤️
-            {% elif notif.notification_type == 'comment' %}💬
-            {% elif notif.notification_type == 'repost' %}🔁
-            {% elif notif.notification_type == 'subscribe' %}👤
-            {% elif notif.notification_type == 'message' %}✉️
-            {% elif notif.notification_type == 'group_invite' %}🏘
-            {% else %}🔔
+            {% if notif.notification_type == 'like' %}<svg class="icon" width="20" height="20"><use href="#icon-heart"></use></svg>
+            {% elif notif.notification_type == 'comment' %}<svg class="icon" width="20" height="20"><use href="#icon-message-circle"></use></svg>
+            {% elif notif.notification_type == 'repost' %}<svg class="icon" width="20" height="20"><use href="#icon-repeat-2"></use></svg>
+            {% elif notif.notification_type == 'subscribe' %}<svg class="icon" width="20" height="20"><use href="#icon-user"></use></svg>
+            {% elif notif.notification_type == 'message' %}<svg class="icon" width="20" height="20"><use href="#icon-mail"></use></svg>
+            {% elif notif.notification_type == 'group_invite' %}<svg class="icon" width="20" height="20"><use href="#icon-layout-grid"></use></svg>
+            {% else %}<svg class="icon" width="20" height="20"><use href="#icon-bell"></use></svg>
             {% endif %}
           </span>
 

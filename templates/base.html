@@ -13,6 +13,7 @@
   {% block extra_css %}{% endblock %}
 </head>
 <body>
+  {% include "includes/_icon_sprite.html" %}
 
 <div class="app-layout">
 
@@ -38,34 +39,46 @@
   <nav class="app-sidebar">
 
     <a href="{% url 'feed' %}" class="sidebar-brand">
-      <span class="sidebar-icon">◆</span>
+      <span class="sidebar-icon">
+        <svg class="icon" width="20" height="20"><use href="#icon-diamond"></use></svg>
+      </span>
       <span class="sidebar-label">SocialNet</span>
     </a>
 
     {% if user.is_authenticated %}
 
       <a href="{% url 'feed' %}" class="sidebar-link">
-        <span class="sidebar-icon">🏠</span>
+        <span class="sidebar-icon">
+          <svg class="icon" width="20" height="20"><use href="#icon-home"></use></svg>
+        </span>
         <span class="sidebar-label">Головна</span>
       </a>
 
       <a href="{% url 'search' %}" class="sidebar-link">
-        <span class="sidebar-icon">🔍</span>
+        <span class="sidebar-icon">
+          <svg class="icon" width="20" height="20"><use href="#icon-search"></use></svg>
+        </span>
         <span class="sidebar-label">Пошук</span>
       </a>
 
       <a href="{% url 'post_create' %}" class="sidebar-link">
-        <span class="sidebar-icon">➕</span>
+        <span class="sidebar-icon">
+          <svg class="icon" width="20" height="20"><use href="#icon-plus"></use></svg>
+        </span>
         <span class="sidebar-label">Створити</span>
       </a>
 
       <a href="{% url 'group_list' %}" class="sidebar-link">
-        <span class="sidebar-icon">🏘</span>
+        <span class="sidebar-icon">
+          <svg class="icon" width="20" height="20"><use href="#icon-layout-grid"></use></svg>
+        </span>
         <span class="sidebar-label">Групи</span>
       </a>
 
       <a href="{% url 'chat_list' %}" class="sidebar-link">
-        <span class="sidebar-icon">✉️</span>
+        <span class="sidebar-icon">
+          <svg class="icon" width="20" height="20"><use href="#icon-mail"></use></svg>
+        </span>
         <span class="sidebar-label">Повідомлення</span>
         {% if unread_messages_count %}
           <span class="badge bg-danger rounded-pill sidebar-badge">{{ unread_messages_count }}</span>
@@ -73,7 +86,9 @@
       </a>
 
       <a href="{% url 'notifications' %}" class="sidebar-link">
-        <span class="sidebar-icon">🔔</span>
+        <span class="sidebar-icon">
+          <svg class="icon" width="20" height="20"><use href="#icon-bell"></use></svg>
+        </span>
         <span class="sidebar-label">Сповіщення</span>
         {% if unread_notifications_count %}
           <span class="badge bg-danger rounded-pill sidebar-badge">{{ unread_notifications_count }}</span>
@@ -84,7 +99,9 @@
         {% if user.profile.avatar %}
           <img src="{{ user.profile.avatar.url }}" class="sidebar-avatar-icon" alt="">
         {% else %}
-          <span class="sidebar-icon">👤</span>
+          <span class="sidebar-icon">
+            <svg class="icon" width="20" height="20"><use href="#icon-user"></use></svg>
+          </span>
         {% endif %}
         <span class="sidebar-label">Профіль</span>
       </a>
@@ -94,7 +111,9 @@
 
       <div class="dropup">
         <button type="button" class="sidebar-link" data-bs-toggle="dropdown" aria-expanded="false">
-          <span class="sidebar-icon">☰</span>
+          <span class="sidebar-icon">
+            <svg class="icon" width="20" height="20"><use href="#icon-menu"></use></svg>
+          </span>
           <span class="sidebar-label">Ще</span>
         </button>
         <ul class="dropdown-menu">
@@ -109,11 +128,15 @@
 
     {% else %}
       <a href="{% url 'login' %}" class="sidebar-link">
-        <span class="sidebar-icon">🔑</span>
+        <span class="sidebar-icon">
+          <svg class="icon" width="20" height="20"><use href="#icon-log-in"></use></svg>
+        </span>
         <span class="sidebar-label">Увійти</span>
       </a>
       <a href="{% url 'register' %}" class="sidebar-link">
-        <span class="sidebar-icon">📝</span>
+        <span class="sidebar-icon">
+          <svg class="icon" width="20" height="20"><use href="#icon-user-plus"></use></svg>
+        </span>
         <span class="sidebar-label">Реєстрація</span>
       </a>
     {% endif %}
@@ -126,7 +149,8 @@
      class="btn btn-primary rounded-pill shadow d-flex align-items-center justify-content-center position-fixed"
      style="bottom:24px; right:24px; width:200px; height:56px; z-index:1040; font-size:1.2rem;"
      title="Повідомлення">
-    ✉️ Повідомлення
+    <svg class="icon" width="20" height="20"><use href="#icon-mail"></use></svg> 
+    Повідомлення
     {% if unread_messages_count %}
       <span class="badge bg-danger rounded-pill position-absolute"
             style="top:-4px; right:-4px; font-size:0.7rem;">
