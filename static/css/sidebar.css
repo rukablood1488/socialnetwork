@@ -1,0 +1,148 @@
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.app-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-left: 240px;
+}
+
+
+.app-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 72px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 1.5rem 0.75rem;
+  border-right: 1px solid var(--bs-border-color);
+  background: var(--bs-body-bg);
+  overflow-x: hidden;
+  overflow-y: auto;
+  z-index: 1030;
+
+  
+  transition: width 0.2s ease, box-shadow 0.2s ease;
+}
+
+.app-sidebar:hover {
+  width: 240px;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.12);
+}
+
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-decoration: none;
+  color: inherit;
+  white-space: nowrap;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  font-size: 0.95rem;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.sidebar-link:hover {
+  background: var(--bs-tertiary-bg, #f1f1f1);
+  color: inherit;
+}
+
+.sidebar-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+  flex-shrink: 0;
+  width: 1.5rem;
+  text-align: center;
+}
+
+.sidebar-avatar-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.sidebar-badge {
+  margin-left: auto;
+}
+
+.sidebar-spacer {
+  flex: 1 1 auto;
+}
+
+
+.sidebar-label {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.app-sidebar:hover .sidebar-label {
+  opacity: 1;
+}
+
+
+@media (max-width: 767px) {
+  .app-main {
+    padding-left: 0;
+    padding-bottom: 72px;
+  }
+
+  .app-sidebar,
+  .app-sidebar:hover {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    gap: 0;
+    padding: 0.4rem;
+    border-right: none;
+    border-top: 1px solid var(--bs-border-color);
+    box-shadow: none;
+  }
+
+  .sidebar-brand,
+  .sidebar-link {
+    width: auto;
+    padding: 0.5rem;
+    justify-content: center;
+  }
+
+  .sidebar-brand span:not(.sidebar-icon),
+  .sidebar-label,
+  .sidebar-spacer {
+    display: none;
+  }
+
+  .app-sidebar:hover .sidebar-label {
+    opacity: 0;
+  }
+}

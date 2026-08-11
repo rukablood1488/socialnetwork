@@ -4,20 +4,18 @@
 {% block title %}Стрічка — SocialNet{% endblock %}
 
 {% block content %}
-<div class="row">
+<div class="row justify-content-center">
+
 
   <div class="col-12 col-md-8">
+    <div class="mx-auto" style="max-width: 630px;">
 
-    <div class="border rounded p-3 mb-4">
-      <a href="{% url 'post_create' %}" class="btn btn-primary w-100">
-        + Нова публікація
-      </a>
-    </div>
-
+    
     {% if posts %}
       {% for post in posts %}
         <div class="border rounded p-3 mb-3">
 
+          
           <div class="d-flex align-items-center gap-2 mb-2">
             {% if post.author.profile.avatar %}
               <img src="{{ post.author.profile.avatar.url }}"
@@ -43,6 +41,7 @@
               </div>
             </div>
 
+            
             {% if user == post.author or user.is_staff %}
               <div class="ms-auto d-flex gap-1">
                 <a href="{% url 'post_edit' post.pk %}"
@@ -57,29 +56,29 @@
             {% endif %}
           </div>
 
-
+          
           {% if post.image %}
             <img src="{{ post.image.url }}"
                  class="img-fluid rounded mb-2"
                  alt="">
           {% endif %}
 
-
+          
           {% if post.video %}
             <video controls class="w-100 rounded mb-2">
               <source src="{{ post.video.url }}">
             </video>
           {% endif %}
 
-
+          
           {% if post.text %}
             <p class="mb-2">{{ post.text|linkify_mentions }}</p>
           {% endif %}
 
-
+          
           <div class="d-flex gap-2 pt-2 border-top">
 
-
+            
             <form method="post" action="{% url 'post_like' post.pk %}">
               {% csrf_token %}
               <button type="submit"
@@ -88,7 +87,7 @@
               </button>
             </form>
 
-
+            
             {% if user != post.author %}
               <form method="post" action="{% url 'post_repost' post.pk %}">
                 {% csrf_token %}
@@ -103,12 +102,13 @@
               </span>
             {% endif %}
 
+            
             <a href="{% url 'post_detail' post.pk %}"
                class="btn btn-sm btn-outline-secondary">
               💬 {{ post.comments.count }}
             </a>
 
-
+            
             <button type="button"
                     class="btn btn-sm btn-outline-secondary"
                     data-bs-toggle="modal"
@@ -134,9 +134,10 @@
       </div>
     {% endif %}
 
+    </div>
   </div>
 
-  
+
   <div class="col-md-4 d-none d-md-block">
     <div class="border rounded p-3 mb-3">
       <h2 class="h6 mb-3">Мій профіль</h2>
@@ -172,6 +173,14 @@
         <li class="mt-1"><a href="{% url 'chat_list' %}" class="text-decoration-none">💬 Чат</a></li>
         <li class="mt-1"><a href="{% url 'notifications' %}" class="text-decoration-none">🔔 Сповіщення</a></li>
       </ul>
+    </div>
+
+    
+    <div class="text-muted small px-1">
+      <p class="mb-2">
+        Про нас · Довідка · Умови використання · Конфіденційність
+      </p>
+      <p class="mb-0">© SocialNet, {% now "Y" %}</p>
     </div>
   </div>
 
