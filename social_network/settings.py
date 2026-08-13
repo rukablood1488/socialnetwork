@@ -2,9 +2,12 @@
 Django settings for social_network project.
 """
 
+import os
 from pathlib import Path
 from dotenv import load_dotenv
-import os
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -15,11 +18,11 @@ load_dotenv(BASE_DIR / '.env')
 
 # SECURITY
 
-SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = os.getenv('SECRET_KEY', 'ваш-секретний-ключ-для-розробки')
 
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
 
 
 # APPLICATIONS
@@ -42,6 +45,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -109,8 +113,21 @@ USE_TZ = True
 # STATIC FILES (CSS, JavaScript, Images)
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+STATIC_ROOT = BASE_DIR / 'staticfiles'  
+
+STATICFILES_DIRS = [BASE_DIR / 'static']  
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # MEDIA FILES (User uploads: avatars, photos, videos)
