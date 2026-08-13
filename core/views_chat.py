@@ -45,7 +45,7 @@ class ChatListView(LoginRequiredMixin, View):
     def get(self, request):
         chat_data = _build_chat_sidebar_data(request.user)
         return render(request, self.template_name, {
-            'chat_data':   chat_data,
+            'chat_data': chat_data,
             'active_chat': None,
         })
 
@@ -133,6 +133,24 @@ class ChatMessagesPollView(LoginRequiredMixin, View):
         chat.messages.exclude(sender=request.user).filter(is_read=False).update(is_read=True)
         messages_qs = chat.messages.select_related('sender', 'sender__profile').order_by('created_at')
         return render(request, self.template_name, {'messages_list': messages_qs, 'chat': chat})
+
+
+class ChatPopupView(LoginRequiredMixin, View):
+    template_name = 'chat/_popup_list.html'
+
+    def get(self, request):
+        chat_data = _build_chat_sidebar_data(request.user)
+        return render(request, self.template_name, {'chat_data': chat_data})
+
+
+class ChatPopupConversationView(LoginRequiredMixin, View):
+    template_name = 'chat/_popup_conversation.html'
+
+    def get(self, request, pk):
+        chat = get_object_or_404(Chat, pk=pk, participants=request.user)
+        chat.messages.exclude(sender=request.user).filter(is_read=False).update(is_read=True)
+        messages_qs = chat.messages.select_related('sender', 'sender__profile').order_by('created_at')
+        return render(request, self.template_name, {'chat': chat, 'messages_list': messages_qs})
 
 
 class MessageSendView(LoginRequiredMixin, View):

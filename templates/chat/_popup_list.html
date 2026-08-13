@@ -1,0 +1,63 @@
+{% if chat_data %}
+  <div class="d-flex flex-column">
+    {% for item in chat_data %}
+      <button
+        type="button"
+        class="chat-popup-item d-flex align-items-center gap-2 text-start {% if item.unread_count %}unread{% endif %}"
+        data-chat-id="{{ item.chat.pk }}"
+        data-chat-name="{% if item.chat.is_group %}{{ item.chat.name|default:'Груповий чат' }}{% else %}{{ item.other_user.username }}{% endif %}"
+        data-is-group="{{ item.chat.is_group|yesno:'1,0' }}"
+      >
+        {% if item.chat.is_group %}
+          <div class="rounded-circle bg-primary d-flex align-items-center
+                      justify-content-center text-white flex-shrink-0"
+               style="width:38px;height:38px;">
+            <svg class="icon" width="16" height="16"><use href="#icon-users"></use></svg>
+          </div>
+        {% elif item.other_user.profile.avatar %}
+          <img src="{{ item.other_user.profile.avatar.url }}"
+               width="38" height="38"
+               class="rounded-circle flex-shrink-0"
+               style="object-fit:cover;" alt="">
+        {% else %}
+          <div class="rounded-circle bg-secondary d-flex align-items-center
+                      justify-content-center text-white flex-shrink-0"
+               style="width:38px;height:38px;">
+            {{ item.other_user.username|first|upper|default:"?" }}
+          </div>
+        {% endif %}
+
+        <div class="flex-grow-1 min-width-0">
+          <div class="{% if item.unread_count %}fw-semibold{% endif %} text-truncate small">
+            {% if item.chat.is_group %}
+              {{ item.chat.name|default:"Груповий чат" }}
+            {% else %}
+              {{ item.other_user.get_full_name|default:item.other_user.username }}
+            {% endif %}
+          </div>
+          <div class="text-muted text-truncate" style="font-size:0.76rem;">
+            {% if item.last_message %}
+              {% if item.last_message.sender == user %}Ви: {% endif %}
+              {% if item.last_message.text %}{{ item.last_message.text }}
+              {% elif item.last_message.shared_post %}Допис
+              {% elif item.last_message.image %}Фото
+              {% elif item.last_message.video %}Відео
+              {% elif item.last_message.file %}Файл
+              {% endif %}
+            {% else %}
+              Немає повідомлень
+            {% endif %}
+          </div>
+        </div>
+
+        {% if item.unread_count %}
+          <span class="badge bg-primary rounded-pill flex-shrink-0">{{ item.unread_count }}</span>
+        {% endif %}
+      </button>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="text-muted small text-center p-4 mb-0">
+    Чати з'являться тут, коли ви надішлете або отримаєте повідомлення.
+  </p>
+{% endif %}

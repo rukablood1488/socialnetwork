@@ -10,9 +10,10 @@
     rel="stylesheet"
   >
   <link href="{% static 'css/sidebar.css' %}" rel="stylesheet">
+  <link href="{% static 'css/chat_popup.css' %}" rel="stylesheet">
   {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body class="{% if request.resolver_match.url_name == 'chat_list' or request.resolver_match.url_name == 'chat_detail' %}chat-page{% endif %}">
   {% include "includes/_icon_sprite.html" %}
 
 <div class="app-layout">
@@ -145,11 +146,18 @@
 
 </div>
 
+
+
+{% if user.is_authenticated and request.resolver_match.url_name != 'chat_list' and request.resolver_match.url_name != 'chat_detail' %}
+
+  <form id="popup-csrf-form" class="d-none">{% csrf_token %}</form>
+
   <a href="{% url 'chat_list' %}"
+     id="chat-popup-trigger"
      class="btn btn-primary rounded-pill shadow d-flex align-items-center justify-content-center position-fixed"
-     style="bottom:24px; right:24px; width:200px; height:56px; z-index:1040; font-size:1.2rem;"
+     style="bottom:24px; right:24px; width:200px; height:56px; z-index:1040; font-size:1.2rem; gap:0.5rem;"
      title="Повідомлення">
-    <svg class="icon" width="20" height="20"><use href="#icon-mail"></use></svg> 
+    <svg class="icon" width="20" height="20"><use href="#icon-mail"></use></svg>
     Повідомлення
     {% if unread_messages_count %}
       <span class="badge bg-danger rounded-pill position-absolute"
@@ -159,10 +167,45 @@
     {% endif %}
   </a>
 
+  <div id="chat-popup"
+       class="chat-popup d-none"
+       data-list-url="{% url 'chat_popup' %}"
+       data-conversation-url-base="{% url 'chat_popup_conversation' pk=0 %}">
+
+    <div class="chat-popup-header">
+      <div class="d-flex align-items-center gap-2 min-width-0">
+        <button type="button" id="chat-popup-back" class="chat-popup-icon-btn d-none" title="Назад">
+          <svg class="icon" width="16" height="16"><use href="#icon-arrow-left"></use></svg>
+        </button>
+        <span class="fw-semibold text-truncate" id="chat-popup-title">Повідомлення</span>
+      </div>
+      <div class="d-flex gap-1 flex-shrink-0">
+        <a href="{% url 'chat_list' %}" class="chat-popup-icon-btn" title="Розгорнути">
+          <svg class="icon" width="16" height="16"><use href="#icon-maximize-2"></use></svg>
+        </a>
+        <button type="button" id="chat-popup-close" class="chat-popup-icon-btn" title="Закрити">
+          <svg class="icon" width="16" height="16"><use href="#icon-x"></use></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="chat-popup-body" id="chat-popup-body">
+    </div>
+
+    <a href="{% url 'chat_list' %}"
+       class="chat-popup-compose btn btn-primary"
+       title="Нове повідомлення">
+      <svg class="icon" width="18" height="18"><use href="#icon-pencil"></use></svg>
+    </a>
+
+  </div>
+
+{% endif %}
 
 <script
   src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
 </script>
+<script src="{% static 'js/chat_popup.js' %}"></script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

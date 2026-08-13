@@ -1,0 +1,20 @@
+<div id="popup-messages"
+     class="chat-popup-messages"
+     data-poll-url="{% url 'chat_messages_poll' chat.pk %}">
+  {% include "chat/_messages.html" %}
+</div>
+
+<form id="popup-send-form"
+      class="chat-popup-send-form"
+      data-send-url="{% url 'message_send' chat.pk %}">
+  <input
+    type="text"
+    name="text"
+    class="form-control form-control-sm"
+    placeholder="Повідомлення..."
+    autocomplete="off"
+  >
+  <button type="submit" class="btn btn-primary btn-sm">
+    <svg class="icon" width="16" height="16"><use href="#icon-send"></use></svg>
+  </button>
+</form>

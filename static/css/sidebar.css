@@ -6,7 +6,13 @@
 .app-main {
   flex: 1 1 auto;
   min-width: 0;
+
   padding-left: 240px;
+}
+
+
+.chat-page .app-main {
+  padding-left: 60px;
 }
 
 
@@ -26,7 +32,6 @@
   overflow-y: auto;
   z-index: 1030;
 
-  
   transition: width 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -93,7 +98,6 @@
 .sidebar-spacer {
   flex: 1 1 auto;
 }
-
 
 .sidebar-label {
   opacity: 0;
