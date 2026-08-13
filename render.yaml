@@ -1,0 +1,22 @@
+services:
+  # Web Service
+  - type: web
+    name: core  # <-- ЗМІНИТИ НА НАЗВУ СВОГО ДОДАТКУ
+    runtime: docker
+    dockerfilePath: ./Dockerfile.prod
+    region: frankfurt  # Можна змінити: oregon, singapore, frankfurt
+    plan: free  # Або: starter, standard, pro
+    branch: main  # Гілка для автоматичного розгортання
+    healthCheckPath: /
+    envVars:
+      - key: DEBUG
+        value: False
+      - key: SECRET_KEY
+        generateValue: true  # Render згенерує автоматично
+      - key: ALLOWED_HOSTS
+        sync: false  # Встановиш вручну після розгортання
+      - key: PYTHON_VERSION
+        value: 3.14.2
+      - key: PORT
+        value: 8000
+    autoDeploy: true  # Авто-деплой при push до main
