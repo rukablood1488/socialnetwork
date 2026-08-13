@@ -1,0 +1,19 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile          # локальний образ (не Dockerfile.prod)
+    container_name: socialnetwork
+    env_file:
+      - .env                          # зроби з .env.example: cp .env.example .env
+    environment:
+      - DEBUG=True
+    ports:
+      - "8000:8000"                   # http://localhost:8000
+    volumes:
+      - .:/app                        # hot-reload коду
+      - media:/app/media              # завантажені файли
+    restart: unless-stopped
+
+volumes:
+  media:
