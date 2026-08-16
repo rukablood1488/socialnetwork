@@ -91,9 +91,19 @@
     <div class="p-3 border-bottom">
       <div class="d-flex justify-content-between align-items-center mb-2">
         <h1 class="h6 mb-0">Повідомлення</h1>
-        <a href="{% url 'chat_create_group' %}" class="btn btn-outline-primary btn-sm" title="Груповий чат">
-          <svg class="icon" width="20" height="20"><use href="#icon-users"></use></svg>
-        </a>
+        <div class="d-flex gap-1">
+          {% if request.GET.from == 'popup' %}
+            <button type="button"
+                    class="btn btn-outline-secondary btn-sm"
+                    title="Згорнути"
+                    onclick="history.back()">
+              <svg class="icon" width="20" height="20"><use href="#icon-minimize-2"></use></svg>
+            </button>
+          {% endif %}
+          <a href="{% url 'chat_create_group' %}" class="btn btn-outline-primary btn-sm" title="Груповий чат">
+            <svg class="icon" width="20" height="20"><use href="#icon-users"></use></svg>
+          </a>
+        </div>
       </div>
 
       <div class="position-relative">
