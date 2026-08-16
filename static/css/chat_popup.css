@@ -80,21 +80,6 @@
   flex-shrink: 0;
 }
 
-
-.chat-popup-compose {
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
-  text-decoration: none;
-}
-
 @media (max-width: 480px) {
   .chat-popup {
     width: 94vw;
