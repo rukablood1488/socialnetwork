@@ -1,0 +1,32 @@
+.feed-col { max-width: 630px; }
+
+.feed-aside-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.feed-aside-links a {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.25rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 0.88rem;
+  transition: background-color 0.15s ease, padding-left 0.15s ease;
+}
+.feed-aside-links a:hover {
+  background: var(--bg-surface-2);
+  padding-left: 0.5rem;
+}
+.feed-aside-links .icon { width: 19px; height: 19px; color: var(--text-secondary); }
+
+.feed-footer-links {
+  color: var(--text-tertiary);
+  font-size: 0.76rem;
+  line-height: 1.6;
+}

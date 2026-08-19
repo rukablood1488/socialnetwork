@@ -10,7 +10,14 @@
   const body     = document.getElementById('chat-popup-body');
 
   const listUrl = popup.dataset.listUrl;
-  const conversationUrlBase = popup.dataset.conversationUrlBase; 
+  const conversationUrlBase = popup.dataset.conversationUrlBase;
+
+  const LOADING_HTML =
+    '<div class="p-3 d-flex flex-column gap-2">' +
+    '<div class="skeleton" style="height:52px;border-radius:12px;"></div>' +
+    '<div class="skeleton" style="height:52px;border-radius:12px;"></div>' +
+    '<div class="skeleton" style="height:52px;border-radius:12px;"></div>' +
+    '</div>';
 
   let pollTimer = null;
   let currentChatId = null;
@@ -29,12 +36,14 @@
 
   function openPopup() {
     popup.classList.remove('d-none');
+    popup.classList.add('pop-in');
     trigger.classList.add('d-none');
     loadList();
   }
 
   function closePopup() {
     popup.classList.add('d-none');
+    popup.classList.remove('pop-in');
     trigger.classList.remove('d-none');
     stopPolling();
     currentChatId = null;
@@ -54,7 +63,7 @@
     stopPolling();
     currentChatId = null;
     showListHeader();
-    body.innerHTML = '<p class="text-muted small text-center p-4">Завантаження...</p>';
+    body.innerHTML = LOADING_HTML;
 
     fetch(listUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
       .then(function (res) { return res.text(); })
@@ -70,7 +79,7 @@
     stopPolling();
     currentChatId = chatId;
     showConversationHeader(chatName);
-    body.innerHTML = '<p class="text-muted small text-center p-4">Завантаження...</p>';
+    body.innerHTML = LOADING_HTML;
 
     const url = conversationUrlBase.replace('0', chatId);
 
@@ -151,7 +160,7 @@
 
   backBtn.addEventListener('click', loadList);
 
-  
+
   body.addEventListener('click', function (e) {
     const item = e.target.closest('.chat-popup-item');
     if (item) {

@@ -1,7 +1,6 @@
-<div class="d-flex align-items-center gap-2 p-3 border-bottom flex-shrink-0">
+<div class="chat-header">
   {% if active_chat.is_group %}
-    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white flex-shrink-0"
-         style="width:36px;height:36px;">
+    <div class="chat-icon-avatar avatar-md">
          <svg class="icon" width="20" height="20"><use href="#icon-users"></use></svg>
     </div>
     <span class="fw-semibold">{{ active_chat.name|default:"Груповий чат" }}</span>
@@ -27,13 +26,9 @@
     </div>
   {% else %}
     {% if other_user.profile.avatar %}
-      <img src="{{ other_user.profile.avatar.url }}"
-           width="36" height="36" class="rounded-circle flex-shrink-0" style="object-fit:cover;" alt="">
+      <img src="{{ other_user.profile.avatar.url }}" class="avatar avatar-md" alt="">
     {% else %}
-      <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white flex-shrink-0"
-           style="width:36px;height:36px;">
-        {{ other_user.username|first|upper }}
-      </div>
+      <div class="avatar avatar-md">{{ other_user.username|first|upper }}</div>
     {% endif %}
     <a href="{% url 'profile' other_user.username %}" class="fw-semibold text-decoration-none">
       {{ other_user.username }}
@@ -53,14 +48,14 @@
 
 <form method="post" action="{% url 'message_send' active_chat.pk %}"
       enctype="multipart/form-data"
-      class="border-top p-2 d-flex gap-2 align-items-center flex-shrink-0">
+      class="chat-send-form">
   {% csrf_token %}
 
-  <label class="btn btn-outline-secondary btn-sm mb-0" title="Додати файл">
+  <label class="btn-icon" title="Додати файл">
     <svg class="icon" width="20" height="20"><use href="#icon-paperclip"></use></svg>
     <input type="file" name="file" class="d-none">
   </label>
-  <label class="btn btn-outline-secondary btn-sm mb-0" title="Додати фото">
+  <label class="btn-icon" title="Додати фото">
     <svg class="icon" width="20" height="20"><use href="#icon-image"></use></svg>
     <input type="file" name="image" accept="image/*" class="d-none">
   </label>
@@ -72,7 +67,7 @@
     placeholder="Написати повідомлення..."
     autocomplete="off"
   >
-  <button type="submit" class="btn btn-primary btn-sm">
-    <svg class="icon" width="20" height="20"><use href="#icon-send"></use></svg>
+  <button type="submit" class="btn btn-brand btn-sm flex-shrink-0">
+    <svg class="icon" width="18" height="18"><use href="#icon-send"></use></svg>
   </button>
 </form>

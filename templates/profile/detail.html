@@ -1,41 +1,48 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}{{ profile_user.username }} — SocialNet{% endblock %}
 
+{% block extra_css %}
+  <link href="{% static 'css/profile.css' %}" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-9">
 
 
 {% if profile_user.profile.cover %}
-  <img src="{{ profile_user.profile.cover.url }}"
-       alt="Обкладинка"
-       class="w-100 mb-3"
-       style="max-height:200px; object-fit:cover; border-radius:8px;">
+  <img src="{{ profile_user.profile.cover.url }}" alt="Обкладинка" class="profile-cover anim-fade-in">
+{% else %}
+  <div class="profile-cover-placeholder anim-fade-in"></div>
 {% endif %}
 
 
-<div class="d-flex align-items-center gap-3 mb-3">
-  {% if profile_user.profile.avatar %}
-    <img src="{{ profile_user.profile.avatar.url }}"
-         alt="Аватар"
-         class="rounded-circle"
-         width="80" height="80"
-         style="object-fit:cover;">
-  {% else %}
-    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white"
-         style="width:80px;height:80px;font-size:2rem;">
-      {{ profile_user.username|first|upper }}
-    </div>
-  {% endif %}
+<div class="profile-header anim-fade-in-up">
+  <div class="avatar-ring">
+    {% if profile_user.profile.avatar %}
+      <img src="{{ profile_user.profile.avatar.url }}" alt="Аватар" class="avatar avatar-xl">
+    {% else %}
+      <div class="avatar avatar-xl">{{ profile_user.username|first|upper }}</div>
+    {% endif %}
+  </div>
 
   <div>
-    <div class="d-flex align-items-center gap-2">
+    <div class="profile-name-row">
       <h1 class="h4 mb-0">
         {{ profile_user.get_full_name|default:profile_user.username }}
       </h1>
       {% if profile_user.profile.is_private %}
-        <span class="badge bg-secondary">
-          <svg class="icon" width="20" height="20"><use href="#icon-lock"></use></svg>
+        <span class="badge-private">
+          <svg class="icon" width="14" height="14"><use href="#icon-lock"></use></svg>
           Приватний
+        </span>
+      {% endif %}
+      {% if profile_user.is_staff %}
+        <span class="badge-admin">
+          <svg class="icon" width="14" height="14"><use href="#icon-badge-check"></use></svg>
+          Адмін
         </span>
       {% endif %}
     </div>
@@ -45,30 +52,30 @@
 
 
 {% if profile_user.profile.bio %}
-  <p class="mb-2">{{ profile_user.profile.bio }}</p>
+  <p class="profile-bio mb-2">{{ profile_user.profile.bio }}</p>
 {% endif %}
 
 
 {% if profile_user.profile.birth_date %}
-  <p class="text-muted small mb-2">
-    <svg class="icon" width="20" height="20"><use href="#icon-cake"></use></svg>
+  <p class="text-muted small mb-2 d-flex align-items-center gap-1">
+    <svg class="icon" width="16" height="16"><use href="#icon-cake"></use></svg>
     {{ profile_user.profile.birth_date|date:"d.m.Y" }}
   </p>
 {% endif %}
 
 
-<div class="d-flex gap-3 mb-3">
-  <a href="{% url 'profile_friends' profile_user.username %}" class="text-decoration-none">
+<div class="profile-stats">
+  <a href="{% url 'profile_friends' profile_user.username %}" class="profile-stat">
     <strong>{{ friends_count }}</strong>
-    <span class="text-muted small">друзів</span>
+    <span>друзів</span>
   </a>
-  <a href="{% url 'profile_followers' profile_user.username %}" class="text-decoration-none">
+  <a href="{% url 'profile_followers' profile_user.username %}" class="profile-stat">
     <strong>{{ followers_count }}</strong>
-    <span class="text-muted small">підписників</span>
+    <span>підписників</span>
   </a>
-  <a href="{% url 'profile_following' profile_user.username %}" class="text-decoration-none">
+  <a href="{% url 'profile_following' profile_user.username %}" class="profile-stat">
     <strong>{{ following_count }}</strong>
-    <span class="text-muted small">підписок</span>
+    <span>підписок</span>
   </a>
 </div>
 
@@ -94,19 +101,19 @@
     {% elif profile_user.profile.is_private %}
       <form method="post" action="{% url 'subscribe' profile_user.pk %}">
         {% csrf_token %}
-        <button class="btn btn-primary btn-sm">Запросити стеження</button>
+        <button class="btn btn-brand btn-sm">Запросити стеження</button>
       </form>
     {% else %}
       <form method="post" action="{% url 'subscribe' profile_user.pk %}">
         {% csrf_token %}
-        <button class="btn btn-primary btn-sm">Підписатись</button>
+        <button class="btn btn-brand btn-sm">Підписатись</button>
       </form>
     {% endif %}
 
 
     {% if is_friend %}
-      <span class="badge bg-success">
-        <svg class="icon" width="20" height="20"><use href="#icon-handshake"></use></svg> 
+      <span class="badge-admin">
+        <svg class="icon" width="14" height="14"><use href="#icon-handshake"></use></svg>
         Друзі
       </span>
     {% endif %}
@@ -120,12 +127,12 @@
 <h2 class="h5 mb-3">Публікації</h2>
 
 {% if is_locked %}
-  <div class="text-center text-muted py-5">
-    <p style="font-size:2rem;" class="mb-2">
-      <svg class="icon" width="20" height="20"><use href="#icon-lock"></use></svg>
-    </p>
-    <p class="mb-1">Цей акаунт приватний.</p>
-    <p class="small">
+  <div class="empty-state">
+    <div class="empty-state-icon">
+      <svg class="icon"><use href="#icon-lock"></use></svg>
+    </div>
+    <h2>Цей акаунт приватний</h2>
+    <p>
       {% if is_pending %}
         Запит на стеження очікує підтвердження.
       {% else %}
@@ -134,32 +141,32 @@
     </p>
   </div>
 {% elif posts %}
-  <div class="row row-cols-3 g-1">
+  <div class="profile-grid anim-fade-in">
     {% for post in posts %}
-      <div class="col">
-        <a href="{% url 'post_detail' post.pk %}"
-           class="d-block position-relative"
-           style="aspect-ratio: 1 / 1; overflow:hidden; background:#000;">
+      <a href="{% url 'post_detail' post.pk %}" class="profile-grid-item">
 
-          {% if post.media_type == 'video' %}
-            <video class="w-100 h-100" style="object-fit:cover;" muted>
-              <source src="{{ post.video.url }}">
-            </video>
-            <span class="position-absolute top-0 end-0 m-1 text-white" style="font-size:1.1rem;">
-              ▶
-            </span>
-          {% else %}
-            <img src="{{ post.image.url }}"
-                 class="w-100 h-100"
-                 style="object-fit:cover;"
-                 alt="">
-          {% endif %}
-        </a>
-      </div>
+        {% if post.media_type == 'video' %}
+          <video muted>
+            <source src="{{ post.video.url }}">
+          </video>
+          <span class="profile-grid-item-video-badge">
+            <svg class="icon" fill="currentColor"><use href="#icon-video"></use></svg>
+          </span>
+        {% else %}
+          <img src="{{ post.image.url }}" alt="" loading="lazy">
+        {% endif %}
+
+        <span class="profile-grid-item-overlay">
+          <span><svg class="icon" fill="currentColor"><use href="#icon-heart"></use></svg> {{ post.likes.count }}</span>
+          <span><svg class="icon" fill="currentColor"><use href="#icon-message-circle"></use></svg> {{ post.comments.count }}</span>
+        </span>
+      </a>
     {% endfor %}
   </div>
 {% else %}
   <p class="text-muted">Публікацій ще немає.</p>
 {% endif %}
 
+  </div>
+</div>
 {% endblock %}

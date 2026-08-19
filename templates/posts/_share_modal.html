@@ -1,36 +1,26 @@
 <div class="modal fade" id="share-modal-{{ post.pk }}" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
+    <div class="modal-content anim-scale-in">
       <div class="modal-header">
         <h5 class="modal-title">Поділитись дописом</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрити"></button>
       </div>
       <div class="modal-body">
         {% if share_chats %}
-          <div class="d-flex flex-column gap-2">
+          <div class="d-flex flex-column gap-1">
             {% for item in share_chats %}
               <form method="post" action="{% url 'post_share' post.pk item.chat.pk %}">
                 {% csrf_token %}
-                <button type="submit"
-                        class="btn btn-outline-secondary w-100 text-start d-flex align-items-center gap-2">
+                <button type="submit" class="share-target-btn">
 
                   {% if item.chat.is_group %}
-                    <div class="rounded-circle bg-primary d-flex align-items-center
-                                justify-content-center text-white flex-shrink-0"
-                         style="width:36px;height:36px;">
-                         <svg class="icon" width="20" height="20"><use href="#icon-users"></use></svg>
+                    <div class="avatar avatar-sm" style="background:var(--brand-gradient); color:#fff;">
+                      <svg class="icon" width="16" height="16"><use href="#icon-users"></use></svg>
                     </div>
                   {% elif item.avatar_user.profile.avatar %}
-                    <img src="{{ item.avatar_user.profile.avatar.url }}"
-                         width="36" height="36"
-                         class="rounded-circle flex-shrink-0"
-                         style="object-fit:cover;" alt="">
+                    <img src="{{ item.avatar_user.profile.avatar.url }}" class="avatar avatar-sm" alt="">
                   {% else %}
-                    <div class="rounded-circle bg-secondary d-flex align-items-center
-                                justify-content-center text-white flex-shrink-0"
-                         style="width:36px;height:36px;">
-                      {{ item.label|first|upper }}
-                    </div>
+                    <div class="avatar avatar-sm">{{ item.label|first|upper }}</div>
                   {% endif %}
 
                   <span>{{ item.label }}</span>

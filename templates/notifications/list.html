@@ -1,6 +1,11 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Сповіщення — SocialNet{% endblock %}
+
+{% block extra_css %}
+  <link href="{% static 'css/notifications.css' %}" rel="stylesheet">
+{% endblock %}
 
 {% block content %}
 
@@ -24,38 +29,31 @@
         {% csrf_token %}
         <button
           type="submit"
-          class="btn w-100 text-start border rounded p-3 d-flex align-items-center gap-3
-                 {% if not notif.is_read %}bg-body-tertiary{% endif %}"
+          class="btn notif-row anim-stagger {% if not notif.is_read %}is-unread{% endif %}"
+          style="--stagger: {{ forloop.counter0 }};"
         >
 
-          <span style="font-size:1.4rem;" class="flex-shrink-0">
-            {% if notif.notification_type == 'like' %}<svg class="icon" width="20" height="20"><use href="#icon-heart"></use></svg>
-            {% elif notif.notification_type == 'comment' %}<svg class="icon" width="20" height="20"><use href="#icon-message-circle"></use></svg>
-            {% elif notif.notification_type == 'repost' %}<svg class="icon" width="20" height="20"><use href="#icon-repeat-2"></use></svg>
-            {% elif notif.notification_type == 'subscribe' %}<svg class="icon" width="20" height="20"><use href="#icon-user"></use></svg>
-            {% elif notif.notification_type == 'message' %}<svg class="icon" width="20" height="20"><use href="#icon-mail"></use></svg>
-            {% elif notif.notification_type == 'group_invite' %}<svg class="icon" width="20" height="20"><use href="#icon-layout-grid"></use></svg>
-            {% else %}<svg class="icon" width="20" height="20"><use href="#icon-bell"></use></svg>
+          <span class="notif-type-icon type-{{ notif.notification_type }}">
+            {% if notif.notification_type == 'like' %}<svg class="icon"><use href="#icon-heart"></use></svg>
+            {% elif notif.notification_type == 'comment' %}<svg class="icon"><use href="#icon-message-circle"></use></svg>
+            {% elif notif.notification_type == 'repost' %}<svg class="icon"><use href="#icon-repeat-2"></use></svg>
+            {% elif notif.notification_type == 'subscribe' %}<svg class="icon"><use href="#icon-user"></use></svg>
+            {% elif notif.notification_type == 'message' %}<svg class="icon"><use href="#icon-mail"></use></svg>
+            {% elif notif.notification_type == 'group_invite' %}<svg class="icon"><use href="#icon-layout-grid"></use></svg>
+            {% else %}<svg class="icon"><use href="#icon-bell"></use></svg>
             {% endif %}
           </span>
 
-          
+
           {% if notif.sender %}
             {% if notif.sender.profile.avatar %}
-              <img src="{{ notif.sender.profile.avatar.url }}"
-                   width="40" height="40"
-                   class="rounded-circle flex-shrink-0"
-                   style="object-fit:cover;" alt="">
+              <img src="{{ notif.sender.profile.avatar.url }}" class="avatar avatar-md" alt="">
             {% else %}
-              <div class="rounded-circle bg-secondary d-flex align-items-center
-                          justify-content-center text-white flex-shrink-0"
-                   style="width:40px;height:40px;">
-                {{ notif.sender.username|first|upper }}
-              </div>
+              <div class="avatar avatar-md">{{ notif.sender.username|first|upper }}</div>
             {% endif %}
           {% endif %}
 
-          
+
           <div class="flex-grow-1 min-width-0 text-body">
             <div class="{% if not notif.is_read %}fw-semibold{% endif %}">
               {{ notif.text }}
@@ -65,9 +63,9 @@
             </div>
           </div>
 
-          
+
           {% if not notif.is_read %}
-            <span class="badge bg-primary rounded-circle flex-shrink-0" style="width:10px;height:10px;"></span>
+            <span class="badge-dot flex-shrink-0"></span>
           {% endif %}
 
         </button>
@@ -75,7 +73,13 @@
     {% endfor %}
   </div>
 {% else %}
-  <p class="text-muted text-center py-5">Сповіщень поки немає.</p>
+  <div class="empty-state">
+    <div class="empty-state-icon">
+      <svg class="icon"><use href="#icon-bell"></use></svg>
+    </div>
+    <h2>Сповіщень поки немає</h2>
+    <p>Лайки, коментарі та нові підписники з'являться тут.</p>
+  </div>
 {% endif %}
 
 {% endblock %}

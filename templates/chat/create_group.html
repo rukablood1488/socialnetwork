@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Новий груповий чат — SocialNet{% endblock %}
 
@@ -12,7 +13,7 @@
       <div class="alert alert-danger">{{ error }}</div>
     {% endif %}
 
-    <form method="post">
+    <form method="post" class="surface-card p-4">
       {% csrf_token %}
 
       <div class="mb-3">
@@ -26,28 +27,20 @@
         >
       </div>
 
-      
+
       <div class="mb-3">
         <label class="form-label">Учасники</label>
 
         {% if friends %}
-          <div class="border rounded p-2" style="max-height:320px; overflow-y:auto;">
+          <div class="friend-picker p-2">
             {% for friend in friends %}
-              <label class="d-flex align-items-center gap-2 p-2 rounded"
-                     style="cursor:pointer;">
+              <label class="friend-picker-item">
                 <input type="checkbox" name="participants" value="{{ friend.pk }}" class="form-check-input mt-0">
 
                 {% if friend.profile.avatar %}
-                  <img src="{{ friend.profile.avatar.url }}"
-                       width="36" height="36"
-                       class="rounded-circle flex-shrink-0"
-                       style="object-fit:cover;" alt="">
+                  <img src="{{ friend.profile.avatar.url }}" class="avatar avatar-sm" alt="">
                 {% else %}
-                  <div class="rounded-circle bg-secondary d-flex align-items-center
-                              justify-content-center text-white flex-shrink-0"
-                       style="width:36px;height:36px;">
-                    {{ friend.username|first|upper }}
-                  </div>
+                  <div class="avatar avatar-sm">{{ friend.username|first|upper }}</div>
                 {% endif %}
 
                 <div>
@@ -65,7 +58,7 @@
         {% endif %}
       </div>
 
-      <button type="submit" class="btn btn-primary w-100" {% if not friends %}disabled{% endif %}>
+      <button type="submit" class="btn btn-brand w-100" {% if not friends %}disabled{% endif %}>
         Створити чат
       </button>
       <a href="{% url 'chat_list' %}" class="btn btn-link w-100 mt-1 text-muted">Скасувати</a>

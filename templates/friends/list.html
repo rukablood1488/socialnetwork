@@ -1,6 +1,11 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Друзі — SocialNet{% endblock %}
+
+{% block extra_css %}
+  <link href="{% static 'css/friends.css' %}" rel="stylesheet">
+{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-start mb-4">
@@ -19,19 +24,12 @@
   <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
     {% for friend in friends %}
       <div class="col">
-        <div class="border rounded p-3 d-flex align-items-center gap-3">
+        <div class="friend-card anim-stagger" style="--stagger: {{ forloop.counter0 }};">
 
           {% if friend.profile.avatar %}
-            <img src="{{ friend.profile.avatar.url }}"
-                 width="48" height="48"
-                 class="rounded-circle flex-shrink-0"
-                 style="object-fit:cover;" alt="">
+            <img src="{{ friend.profile.avatar.url }}" class="avatar avatar-md" alt="">
           {% else %}
-            <div class="rounded-circle bg-secondary d-flex align-items-center
-                        justify-content-center text-white flex-shrink-0"
-                 style="width:48px;height:48px;">
-              {{ friend.username|first|upper }}
-            </div>
+            <div class="avatar avatar-md">{{ friend.username|first|upper }}</div>
           {% endif %}
 
           <div class="flex-grow-1 min-width-0">
@@ -47,9 +45,9 @@
                 class="flex-shrink-0">
             {% csrf_token %}
             <button type="submit"
-                    class="btn btn-outline-danger btn-sm"
+                    class="btn-icon"
                     onclick="return confirm('Видалити з друзів?')">
-              <svg class="icon" width="20" height="20"><use href="#icon-x"></use></svg>
+              <svg class="icon" width="18" height="18"><use href="#icon-x"></use></svg>
             </button>
           </form>
 
@@ -58,7 +56,13 @@
     {% endfor %}
   </div>
 {% else %}
-  <p class="text-muted">У вас ще немає друзів.</p>
+  <div class="empty-state">
+    <div class="empty-state-icon">
+      <svg class="icon"><use href="#icon-users"></use></svg>
+    </div>
+    <h2>У вас ще немає друзів</h2>
+    <p>Підпишіться на когось — коли підписка стане взаємною, ви станете друзями.</p>
+  </div>
 {% endif %}
 
 {% endblock %}

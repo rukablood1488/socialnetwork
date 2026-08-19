@@ -4,7 +4,9 @@
 
 {% block auth_form %}
   <div class="text-center mb-4">
-    <svg class="icon mb-2" width="40" height="40"><use href="#icon-diamond"></use></svg>
+    <div class="auth-icon-badge">
+      <svg class="icon" width="24" height="24"><use href="#icon-diamond"></use></svg>
+    </div>
     <h1 class="h5 mb-0">Створити акаунт</h1>
   </div>
 
@@ -19,7 +21,7 @@
   <form method="post" novalidate>
     {% csrf_token %}
 
-    
+
     <div class="mb-3">
       <input
         type="text"
@@ -35,7 +37,7 @@
       {% endfor %}
     </div>
 
-    
+
     <div class="mb-3">
       <input
         type="email"
@@ -50,41 +52,51 @@
       {% endfor %}
     </div>
 
-    
+
     <div class="mb-3">
-      <input
-        type="password"
-        name="{{ form.password1.html_name }}"
-        id="{{ form.password1.id_for_label }}"
-        class="form-control {% if form.password1.errors %}is-invalid{% endif %}"
-        placeholder="Пароль"
-      >
+      <div class="password-field">
+        <input
+          type="password"
+          name="{{ form.password1.html_name }}"
+          id="{{ form.password1.id_for_label }}"
+          class="form-control {% if form.password1.errors %}is-invalid{% endif %}"
+          placeholder="Пароль"
+        >
+        <button type="button" class="password-toggle" data-target="{{ form.password1.id_for_label }}" aria-label="Показати пароль">
+          <svg class="icon" width="18" height="18"><use href="#icon-eye"></use></svg>
+        </button>
+      </div>
       {% for error in form.password1.errors %}
-        <div class="invalid-feedback">{{ error }}</div>
+        <div class="invalid-feedback d-block">{{ error }}</div>
       {% endfor %}
     </div>
 
-    
+
     <div class="mb-3">
-      <input
-        type="password"
-        name="{{ form.password2.html_name }}"
-        id="{{ form.password2.id_for_label }}"
-        class="form-control {% if form.password2.errors %}is-invalid{% endif %}"
-        placeholder="Повторіть пароль"
-      >
+      <div class="password-field">
+        <input
+          type="password"
+          name="{{ form.password2.html_name }}"
+          id="{{ form.password2.id_for_label }}"
+          class="form-control {% if form.password2.errors %}is-invalid{% endif %}"
+          placeholder="Повторіть пароль"
+        >
+        <button type="button" class="password-toggle" data-target="{{ form.password2.id_for_label }}" aria-label="Показати пароль">
+          <svg class="icon" width="18" height="18"><use href="#icon-eye"></use></svg>
+        </button>
+      </div>
       {% for error in form.password2.errors %}
-        <div class="invalid-feedback">{{ error }}</div>
+        <div class="invalid-feedback d-block">{{ error }}</div>
       {% endfor %}
     </div>
 
-    <button type="submit" class="btn btn-primary w-100">Зареєструватись</button>
+    <button type="submit" class="btn btn-brand w-100">Зареєструватись</button>
   </form>
 {% endblock %}
 
 {% block auth_secondary %}
-  <span class="small">Вже є акаунт?</span>
-  <a href="{% url 'login' %}" class="small fw-semibold text-decoration-none ms-1">
+  <span class="small text-muted">Вже є акаунт?</span>
+  <a href="{% url 'login' %}" class="small fw-semibold text-decoration-none ms-1 text-brand">
     Увійти
   </a>
 {% endblock %}

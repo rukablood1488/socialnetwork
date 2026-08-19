@@ -1,3 +1,43 @@
+.chat-popup-trigger-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--brand-gradient);
+  color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 30px rgba(214, 36, 159, 0.35);
+  z-index: 1040;
+  text-decoration: none;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.chat-popup-trigger-btn:hover { transform: scale(1.06); color: #fff; }
+.chat-popup-trigger-btn:active { transform: scale(0.95); }
+.chat-popup-trigger-btn .icon { width: 24px; height: 24px; }
+
+.chat-popup-trigger-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: var(--radius-full);
+  background: var(--accent-red);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--bg-app);
+}
+
 .chat-popup {
   position: fixed;
   bottom: 24px;
@@ -5,14 +45,15 @@
   width: 360px;
   height: 480px;
   max-height: 70vh;
-  background: var(--bs-body-bg);
-  border: 1px solid var(--bs-border-color);
-  border-radius: 16px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-modal);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   z-index: 1045;
+  transform-origin: bottom right;
 }
 
 .chat-popup-header {
@@ -21,7 +62,7 @@
   justify-content: space-between;
   gap: 0.5rem;
   padding: 0.85rem 1rem;
-  border-bottom: 1px solid var(--bs-border-color);
+  border-bottom: 1px solid var(--border-color);
   flex-shrink: 0;
 }
 
@@ -34,14 +75,15 @@
   border-radius: 50%;
   border: none;
   background: transparent;
-  color: inherit;
+  color: var(--text-secondary);
   text-decoration: none;
   flex-shrink: 0;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .chat-popup-icon-btn:hover {
-  background: var(--bs-tertiary-bg, #f1f1f1);
-  color: inherit;
+  background: var(--bg-surface-3);
+  color: var(--text-primary);
 }
 
 .chat-popup-body {
@@ -52,19 +94,16 @@
   min-height: 0;
 }
 
-
 .chat-popup-item {
   border: none;
-  border-bottom: 1px solid var(--bs-border-color);
+  border-bottom: 1px solid var(--border-color);
   background: transparent;
   padding: 0.6rem 1rem;
   width: 100%;
+  transition: background-color 0.15s ease;
 }
 
-.chat-popup-item:hover {
-  background: var(--bs-tertiary-bg, #f8f9fa);
-}
-
+.chat-popup-item:hover { background: var(--bg-surface-2); }
 
 .chat-popup-messages {
   flex: 1 1 auto;
@@ -76,15 +115,11 @@
   display: flex;
   gap: 0.4rem;
   padding: 0.6rem;
-  border-top: 1px solid var(--bs-border-color);
+  border-top: 1px solid var(--border-color);
   flex-shrink: 0;
 }
 
 @media (max-width: 480px) {
-  .chat-popup {
-    width: 94vw;
-    right: 3vw;
-    bottom: 12px;
-    height: 70vh;
-  }
+  .chat-popup { width: 94vw; right: 3vw; bottom: 12px; height: 70vh; }
+  .chat-popup-trigger-btn { bottom: 88px; }
 }
