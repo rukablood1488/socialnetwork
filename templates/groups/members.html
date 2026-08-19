@@ -1,6 +1,11 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Учасники {{ group.name }} — SocialNet{% endblock %}
+
+{% block extra_css %}
+  <link href="{% static 'css/groups.css' %}" rel="stylesheet">
+{% endblock %}
 
 {% block content %}
 
@@ -16,19 +21,12 @@
 {% if memberships %}
   <div class="d-flex flex-column gap-2">
     {% for membership in memberships %}
-      <div class="border rounded p-3 d-flex align-items-center gap-3">
+      <div class="member-row anim-stagger" style="--stagger: {{ forloop.counter0 }};">
 
         {% if membership.user.profile.avatar %}
-          <img src="{{ membership.user.profile.avatar.url }}"
-               width="44" height="44"
-               class="rounded-circle flex-shrink-0"
-               style="object-fit:cover;" alt="">
+          <img src="{{ membership.user.profile.avatar.url }}" class="avatar avatar-md" alt="">
         {% else %}
-          <div class="rounded-circle bg-secondary d-flex align-items-center
-                      justify-content-center text-white flex-shrink-0"
-               style="width:44px;height:44px;">
-            {{ membership.user.username|first|upper }}
-          </div>
+          <div class="avatar avatar-md">{{ membership.user.username|first|upper }}</div>
         {% endif %}
 
         <div class="flex-grow-1 min-width-0">
@@ -41,11 +39,12 @@
 
         <div class="d-flex align-items-center gap-2 flex-shrink-0">
           {% if membership.user_id == group.creator_id %}
-            <span class="badge bg-warning text-dark">
-              <svg class="icon" width="20" height="20"><use href="#icon-crown"></use></svg> 
-            Засновник</span>
+            <span class="badge-admin">
+              <svg class="icon" width="14" height="14"><use href="#icon-crown"></use></svg>
+              Засновник
+            </span>
           {% elif membership.role == 'admin' %}
-            <span class="badge bg-primary">Адміністратор</span>
+            <span class="badge-admin">Адміністратор</span>
           {% endif %}
 
           {% if is_creator and membership.user_id != group.creator_id and membership.role != 'admin' %}

@@ -1,31 +1,30 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Запити на стеження — SocialNet{% endblock %}
+
+{% block extra_css %}
+  <link href="{% static 'css/friends.css' %}" rel="stylesheet">
+{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
   <h1 class="h4 mb-0">Запити на стеження</h1>
   <a href="{% url 'friends' %}" class="btn btn-outline-secondary btn-sm">
-    ← До списку друзів
+    <svg class="icon"><use href="#icon-arrow-left"></use></svg>
+    До списку друзів
   </a>
 </div>
 
 {% if pending %}
-  <div class="d-flex flex-column gap-3">
+  <div class="d-flex flex-column gap-2">
     {% for sub in pending %}
-      <div class="border rounded p-3 d-flex align-items-center gap-3">
+      <div class="request-card anim-stagger" style="--stagger: {{ forloop.counter0 }};">
 
         {% if sub.follower.profile.avatar %}
-          <img src="{{ sub.follower.profile.avatar.url }}"
-               width="48" height="48"
-               class="rounded-circle flex-shrink-0"
-               style="object-fit:cover;" alt="">
+          <img src="{{ sub.follower.profile.avatar.url }}" class="avatar avatar-md" alt="">
         {% else %}
-          <div class="rounded-circle bg-secondary d-flex align-items-center
-                      justify-content-center text-white flex-shrink-0"
-               style="width:48px;height:48px;">
-            {{ sub.follower.username|first|upper }}
-          </div>
+          <div class="avatar avatar-md">{{ sub.follower.username|first|upper }}</div>
         {% endif %}
 
         <div class="flex-grow-1">
@@ -40,8 +39,8 @@
         <div class="d-flex gap-2 flex-shrink-0">
           <form method="post" action="{% url 'subscription_accept' sub.pk %}">
             {% csrf_token %}
-            <button type="submit" class="btn btn-primary btn-sm">
-              <svg class="icon" width="20" height="20"><use href="#icon-check"></use></svg>
+            <button type="submit" class="btn btn-brand btn-sm">
+              <svg class="icon" width="16" height="16"><use href="#icon-check"></use></svg>
               Підтвердити
             </button>
           </form>
@@ -49,7 +48,7 @@
           <form method="post" action="{% url 'subscription_decline' sub.pk %}">
             {% csrf_token %}
             <button type="submit" class="btn btn-outline-danger btn-sm">
-              <svg class="icon" width="20" height="20"><use href="#icon-x"></use></svg>
+              <svg class="icon" width="16" height="16"><use href="#icon-x"></use></svg>
               Відхилити
             </button>
           </form>
@@ -59,7 +58,13 @@
     {% endfor %}
   </div>
 {% else %}
-  <p class="text-muted">Нових запитів немає.</p>
+  <div class="empty-state">
+    <div class="empty-state-icon">
+      <svg class="icon"><use href="#icon-inbox"></use></svg>
+    </div>
+    <h2>Нових запитів немає</h2>
+    <p>Тут з'являться запити на стеження від приватних акаунтів.</p>
+  </div>
 {% endif %}
 
 {% endblock %}

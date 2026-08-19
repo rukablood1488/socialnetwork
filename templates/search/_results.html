@@ -8,25 +8,17 @@
 
 {% else %}
 
-  
+
   {% if users %}
-    <h2 class="h6 text-muted mb-2">Користувачі</h2>
+    <h2 class="search-section-label">Користувачі</h2>
     <div class="d-flex flex-column gap-2 mb-4">
       {% for u in users %}
-        <a href="{% url 'profile' u.username %}"
-           class="border rounded p-2 d-flex align-items-center gap-3 text-decoration-none text-body">
+        <a href="{% url 'profile' u.username %}" class="search-result-row anim-fade-in">
 
           {% if u.profile.avatar %}
-            <img src="{{ u.profile.avatar.url }}"
-                 width="44" height="44"
-                 class="rounded-circle flex-shrink-0"
-                 style="object-fit:cover;" alt="">
+            <img src="{{ u.profile.avatar.url }}" class="avatar avatar-md" alt="">
           {% else %}
-            <div class="rounded-circle bg-secondary d-flex align-items-center
-                        justify-content-center text-white flex-shrink-0"
-                 style="width:44px;height:44px;">
-              {{ u.username|first|upper }}
-            </div>
+            <div class="avatar avatar-md">{{ u.username|first|upper }}</div>
           {% endif %}
 
           <div class="min-width-0">
@@ -40,23 +32,17 @@
     </div>
   {% endif %}
 
-  
+
   {% if groups %}
-    <h2 class="h6 text-muted mb-2">Групи</h2>
+    <h2 class="search-section-label">Групи</h2>
     <div class="d-flex flex-column gap-2">
       {% for group in groups %}
-        <a href="{% url 'group_detail' group.pk %}"
-           class="border rounded p-2 d-flex align-items-center gap-3 text-decoration-none text-body">
+        <a href="{% url 'group_detail' group.pk %}" class="search-result-row anim-fade-in">
 
           {% if group.cover %}
-            <img src="{{ group.cover.url }}"
-                 width="44" height="44"
-                 class="rounded flex-shrink-0"
-                 style="object-fit:cover;" alt="">
+            <img src="{{ group.cover.url }}" class="search-group-thumb" alt="">
           {% else %}
-            <div class="rounded bg-secondary-subtle d-flex align-items-center
-                        justify-content-center flex-shrink-0"
-                 style="width:44px;height:44px;">
+            <div class="search-group-thumb">
               <svg class="icon" width="20" height="20"><use href="#icon-layout-grid"></use></svg>
             </div>
           {% endif %}

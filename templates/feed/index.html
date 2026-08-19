@@ -1,127 +1,126 @@
 {% extends "base.html" %}
+{% load static %}
 {% load mention_filters %}
 
 {% block title %}Стрічка — SocialNet{% endblock %}
+
+{% block extra_css %}
+  <link href="{% static 'css/posts.css' %}" rel="stylesheet">
+  <link href="{% static 'css/feed.css' %}" rel="stylesheet">
+{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
 
 
   <div class="col-12 col-md-8">
-    <div class="mx-auto" style="max-width: 630px;">
+    <div class="mx-auto feed-col">
 
-    
+
     {% if posts %}
       {% for post in posts %}
-        <div class="border rounded p-3 mb-3">
+        <div class="post-card anim-stagger" style="--stagger: {{ forloop.counter0 }};" data-post-card>
 
-          
-          <div class="d-flex align-items-center gap-2 mb-2">
+          <div class="post-card-header">
             {% if post.author.profile.avatar %}
-              <img src="{{ post.author.profile.avatar.url }}"
-                   width="40" height="40"
-                   class="rounded-circle flex-shrink-0"
-                   style="object-fit:cover;"
-                   alt="">
+              <img src="{{ post.author.profile.avatar.url }}" class="avatar avatar-md" alt="">
             {% else %}
-              <div class="rounded-circle bg-secondary d-flex align-items-center
-                          justify-content-center text-white flex-shrink-0"
-                   style="width:40px;height:40px;">
-                {{ post.author.username|first|upper }}
-              </div>
+              <div class="avatar avatar-md">{{ post.author.username|first|upper }}</div>
             {% endif %}
 
-            <div>
-              <a href="{% url 'profile' post.author.username %}"
-                 class="fw-semibold text-decoration-none">
+            <div class="min-width-0">
+              <a href="{% url 'profile' post.author.username %}" class="post-author-name d-block text-truncate">
                 {{ post.author.get_full_name|default:post.author.username }}
               </a>
-              <div class="text-muted small">
-                {{ post.created_at|date:"d.m.Y H:i" }}
-              </div>
+              <div class="post-meta">{{ post.created_at|date:"d.m.Y H:i" }}</div>
             </div>
 
-            
             {% if user == post.author or user.is_staff %}
-              <div class="ms-auto d-flex gap-1">
-                <a href="{% url 'post_edit' post.pk %}"
-                   class="btn btn-outline-secondary btn-sm">
-                   <svg class="icon" width="20" height="20"><use href="#icon-pencil"></use></svg>                
-                </a>
-                <form method="post" action="{% url 'post_delete' post.pk %}">
-                  {% csrf_token %}
-                  <button type="submit"
-                          class="btn btn-outline-danger btn-sm"
-                          onclick="return confirm('Видалити?')">
-                          <svg class="icon" width="20" height="20"><use href="#icon-trash-2"></use></svg>
-                  </button>
-                </form>
+              <div class="dropdown post-options-btn">
+                <button type="button" class="btn-icon" data-bs-toggle="dropdown" aria-expanded="false">
+                  <svg class="icon" width="20" height="20"><use href="#icon-more-horizontal"></use></svg>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li>
+                    <a href="{% url 'post_edit' post.pk %}" class="dropdown-item">
+                      <svg class="icon" width="16" height="16"><use href="#icon-pencil"></use></svg>
+                      Редагувати
+                    </a>
+                  </li>
+                  <li>
+                    <form method="post" action="{% url 'post_delete' post.pk %}">
+                      {% csrf_token %}
+                      <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Видалити публікацію?')">
+                        <svg class="icon" width="16" height="16"><use href="#icon-trash-2"></use></svg>
+                        Видалити
+                      </button>
+                    </form>
+                  </li>
+                </ul>
               </div>
             {% endif %}
           </div>
 
-          
-          {% if post.image %}
-            <img src="{{ post.image.url }}"
-                 class="img-fluid rounded mb-2"
-                 alt="">
+
+          {% if post.image or post.video %}
+            <div class="post-media" data-dbltap-like>
+              {% if post.image %}
+                <img src="{{ post.image.url }}" alt="" loading="lazy">
+              {% endif %}
+              {% if post.video %}
+                <video controls class="w-100 rounded">
+                  <source src="{{ post.video.url }}">
+                </video>
+              {% endif %}
+              <span class="dbltap-heart">
+                <svg class="icon" fill="currentColor"><use href="#icon-heart"></use></svg>
+              </span>
+            </div>
           {% endif %}
 
-          
-          {% if post.video %}
-            <video controls class="w-100 rounded mb-2">
-              <source src="{{ post.video.url }}">
-            </video>
-          {% endif %}
 
-          
           {% if post.text %}
-            <p class="mb-2">{{ post.text|linkify_mentions }}</p>
+            <p class="post-caption mb-2">{{ post.text|linkify_mentions }}</p>
           {% endif %}
 
-          
-          <div class="d-flex gap-2 pt-2 border-top">
 
-            
-            <form method="post" action="{% url 'post_like' post.pk %}">
+          <div class="post-actions">
+
+            <form method="post" action="{% url 'post_like' post.pk %}" class="like-form">
               {% csrf_token %}
-              <button type="submit"
-                      class="btn btn-sm {% if post.pk in liked_ids %}btn-danger{% else %}btn-outline-danger{% endif %}">
-                <svg class="icon" width="20" height="20"><use href="#icon-heart"></use></svg>
-                {{ post.likes.count }}
-              </button>
+              <span class="like-burst-wrap">
+                <button type="submit" class="action-btn like-btn {% if post.pk in liked_ids %}is-liked{% endif %}">
+                  <svg class="icon" {% if post.pk in liked_ids %}fill="currentColor"{% endif %}><use href="#icon-heart"></use></svg>
+                  {{ post.likes.count }}
+                </button>
+                <span class="like-burst">
+                  <svg class="icon" fill="currentColor"><use href="#icon-heart"></use></svg>
+                </span>
+              </span>
             </form>
 
-            
             {% if user != post.author %}
-              <form method="post" action="{% url 'post_repost' post.pk %}">
+              <form method="post" action="{% url 'post_repost' post.pk %}" class="repost-form">
                 {% csrf_token %}
-                <button type="submit"
-                        class="btn btn-sm {% if post.pk in reposted_ids %}btn-success{% else %}btn-outline-success{% endif %}">
-                  <svg class="icon" width="20" height="20"><use href="#icon-repeat-2"></use></svg>
+                <button type="submit" class="action-btn repost-btn {% if post.pk in reposted_ids %}is-reposted{% endif %}">
+                  <svg class="icon"><use href="#icon-repeat-2"></use></svg>
                   {{ post.reposts.count }}
                 </button>
               </form>
             {% else %}
-              <span class="btn btn-sm btn-outline-success disabled">
-                <svg class="icon" width="20" height="20"><use href="#icon-repeat-2"></use></svg>
+              <span class="action-btn disabled">
+                <svg class="icon"><use href="#icon-repeat-2"></use></svg>
                 {{ post.reposts.count }}
               </span>
             {% endif %}
 
-            
-            <a href="{% url 'post_detail' post.pk %}"
-               class="btn btn-sm btn-outline-secondary">
-              <svg class="icon" width="20" height="20"><use href="#icon-message-circle"></use></svg>
+            <a href="{% url 'post_detail' post.pk %}" class="action-btn">
+              <svg class="icon"><use href="#icon-message-circle"></use></svg>
               {{ post.comments.count }}
             </a>
 
-            
-            <button type="button"
-                    class="btn btn-sm btn-outline-secondary"
-                    data-bs-toggle="modal"
-                    data-bs-target="#share-modal-{{ post.pk }}">
-              <svg class="icon" width="20" height="20"><use href="#icon-share-2"></use></svg>
+            <button type="button" class="action-btn" data-bs-toggle="modal" data-bs-target="#share-modal-{{ post.pk }}">
+              <svg class="icon"><use href="#icon-share-2"></use></svg>
             </button>
 
           </div>
@@ -130,15 +129,13 @@
         {% include "posts/_share_modal.html" with post=post share_chats=share_chats %}
       {% endfor %}
     {% else %}
-      <div class="text-center text-muted py-5">
-        <p class="mb-2">Стрічка порожня.</p>
-        <p class="small">
-          Додайте друзів або підпишіться на когось,
-          щоб бачити їхні публікації.
-        </p>
-        <a href="{% url 'post_create' %}" class="btn btn-primary btn-sm">
-          Створити першу публікацію
-        </a>
+      <div class="empty-state surface-card">
+        <div class="empty-state-icon">
+          <svg class="icon" width="20" height="20"><use href="#icon-home"></use></svg>
+        </div>
+        <h2>Стрічка порожня</h2>
+        <p>Додайте друзів або підпишіться на когось, щоб бачити їхні публікації.</p>
+        <a href="{% url 'post_create' %}" class="btn btn-brand btn-sm">Створити першу публікацію</a>
       </div>
     {% endif %}
 
@@ -147,25 +144,18 @@
 
 
   <div class="col-md-4 d-none d-md-block">
-    <div class="border rounded p-3 mb-3">
+    <div class="feed-aside-card anim-fade-in-up">
       <h2 class="h6 mb-3">Мій профіль</h2>
       <div class="d-flex align-items-center gap-2">
-        {% if user.profile.avatar %}
-          <img src="{{ user.profile.avatar.url }}"
-               width="48" height="48"
-               class="rounded-circle"
-               style="object-fit:cover;"
-               alt="">
-        {% else %}
-          <div class="rounded-circle bg-secondary d-flex align-items-center
-                      justify-content-center text-white"
-               style="width:48px;height:48px;">
-            {{ user.username|first|upper }}
-          </div>
-        {% endif %}
-        <div>
-          <a href="{% url 'profile' user.username %}"
-             class="fw-semibold text-decoration-none d-block">
+        <div class="avatar-ring">
+          {% if user.profile.avatar %}
+            <img src="{{ user.profile.avatar.url }}" class="avatar avatar-md" alt="">
+          {% else %}
+            <div class="avatar avatar-md">{{ user.username|first|upper }}</div>
+          {% endif %}
+        </div>
+        <div class="min-width-0">
+          <a href="{% url 'profile' user.username %}" class="post-author-name d-block text-truncate">
             {{ user.get_full_name|default:user.username }}
           </a>
           <span class="text-muted small">@{{ user.username }}</span>
@@ -173,21 +163,17 @@
       </div>
     </div>
 
-    <div class="border rounded p-3">
+    <div class="feed-aside-card feed-aside-links anim-fade-in-up" style="animation-delay:.05s;">
       <h2 class="h6 mb-2">Швидкі посилання</h2>
-      <ul class="list-unstyled mb-0">
-        <li><a href="{% url 'profile_friends' user.username %}" class="text-decoration-none"><svg class="icon" width="20" height="20"><use href="#icon-users"></use></svg> Друзі</a></li>
-        <li class="mt-1"><a href="{% url 'group_list' %}" class="text-decoration-none"><svg class="icon" width="20" height="20"><use href="#icon-layout-grid"></use></svg> Групи</a></li>
-        <li class="mt-1"><a href="{% url 'chat_list' %}" class="text-decoration-none"><svg class="icon" width="20" height="20"><use href="#icon-message-circle"></use></svg> Чат</a></li>
-        <li class="mt-1"><a href="{% url 'notifications' %}" class="text-decoration-none"><svg class="icon" width="20" height="20"><use href="#icon-bell"></use></svg> Сповіщення</a></li>
-      </ul>
+      <a href="{% url 'profile_friends' user.username %}"><svg class="icon"><use href="#icon-users"></use></svg> Друзі</a>
+      <a href="{% url 'group_list' %}"><svg class="icon"><use href="#icon-layout-grid"></use></svg> Групи</a>
+      <a href="{% url 'chat_list' %}"><svg class="icon"><use href="#icon-message-circle"></use></svg> Чат</a>
+      <a href="{% url 'notifications' %}"><svg class="icon"><use href="#icon-bell"></use></svg> Сповіщення</a>
     </div>
 
-    
-    <div class="text-muted small px-1">
-      <p class="mb-2">
-        Про нас · Довідка · Умови використання · Конфіденційність
-      </p>
+
+    <div class="feed-footer-links px-1">
+      <p class="mb-2">Про нас · Довідка · Умови використання · Конфіденційність</p>
       <p class="mb-0">© SocialNet, {% now "Y" %}</p>
     </div>
   </div>

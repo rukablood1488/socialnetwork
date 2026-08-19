@@ -1,0 +1,32 @@
+.notif-row {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.9rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  background: var(--bg-surface);
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.notif-row:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+.notif-row.is-unread { background: var(--bg-surface-2); }
+
+.notif-type-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--bg-surface-3);
+  color: var(--text-secondary);
+}
+.notif-type-icon.type-like { color: var(--accent-red); background: rgba(237, 73, 86, 0.12); }
+.notif-type-icon.type-comment { color: var(--accent); background: rgba(0, 149, 246, 0.12); }
+.notif-type-icon.type-repost { color: var(--accent-green); background: rgba(0, 200, 83, 0.12); }
+.notif-type-icon.type-subscribe { color: var(--brand-4); background: var(--brand-gradient-soft); }
+.notif-type-icon.type-message { color: var(--brand-1); background: var(--brand-gradient-soft); }
+.notif-type-icon .icon { width: 19px; height: 19px; }

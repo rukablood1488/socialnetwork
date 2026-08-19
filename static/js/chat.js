@@ -4,7 +4,7 @@
 
   if (messagesBox) {
     const pollUrl = messagesBox.dataset.pollUrl;
-    const POLL_INTERVAL = 3000; 
+    const POLL_INTERVAL = 3000;
 
     function scrollToBottom() {
       messagesBox.scrollTop = messagesBox.scrollHeight;
@@ -73,12 +73,27 @@
         item.type = 'button';
         item.className = 'list-group-item list-group-item-action d-flex align-items-center gap-2';
 
-        const avatar = u.avatar_url
-          ? '<img src="' + u.avatar_url + '" width="28" height="28" class="rounded-circle" style="object-fit:cover;">'
-          : '<div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white" ' +
-            'style="width:28px;height:28px;font-size:0.7rem;">' + u.username.charAt(0).toUpperCase() + '</div>';
+        if (u.avatar_url) {
+          const img = document.createElement('img');
+          img.src = u.avatar_url;
+          img.width = 28;
+          img.height = 28;
+          img.className = 'rounded-circle';
+          img.style.objectFit = 'cover';
+          item.appendChild(img);
+        } else {
+          const placeholder = document.createElement('div');
+          placeholder.className = 'rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white';
+          placeholder.style.width = '28px';
+          placeholder.style.height = '28px';
+          placeholder.style.fontSize = '0.7rem';
+          placeholder.textContent = u.username.charAt(0).toUpperCase();
+          item.appendChild(placeholder);
+        }
 
-        item.innerHTML = avatar + '<span>@' + u.username + '</span>';
+        const label = document.createElement('span');
+        label.textContent = '@' + u.username;
+        item.appendChild(label);
 
         item.addEventListener('click', function () {
           openChatWith(u.id);

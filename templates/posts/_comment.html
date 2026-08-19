@@ -1,26 +1,17 @@
 {% load mention_filters %}
 
-<div class="mb-3 {% if depth > 0 %}ms-4 border-start ps-3{% endif %}">
+<div class="comment-row {% if depth > 0 %}is-reply{% endif %} anim-fade-in">
   <div class="d-flex align-items-start gap-2">
 
     {% if comment.author.profile.avatar %}
-      <img src="{{ comment.author.profile.avatar.url }}"
-           width="32" height="32"
-           class="rounded-circle flex-shrink-0"
-           style="object-fit:cover;"
-           alt="">
+      <img src="{{ comment.author.profile.avatar.url }}" class="avatar avatar-sm" alt="">
     {% else %}
-      <div class="rounded-circle bg-secondary d-flex align-items-center
-                  justify-content-center text-white flex-shrink-0"
-           style="width:32px;height:32px;font-size:0.8rem;">
-        {{ comment.author.username|first|upper }}
-      </div>
+      <div class="avatar avatar-sm">{{ comment.author.username|first|upper }}</div>
     {% endif %}
 
-    <div class="flex-grow-1">
+    <div class="flex-grow-1 min-width-0">
       <div class="d-flex align-items-center gap-2 mb-1">
-        <a href="{% url 'profile' comment.author.username %}"
-           class="fw-semibold small text-decoration-none">
+        <a href="{% url 'profile' comment.author.username %}" class="fw-semibold small text-decoration-none">
           {{ comment.author.get_full_name|default:comment.author.username }}
         </a>
         <span class="text-muted" style="font-size:0.75rem;">
@@ -41,31 +32,32 @@
         {% endif %}
       </div>
 
-      <p class="mb-1 small">{{ comment.text|linkify_mentions }}</p>
+      <p class="comment-bubble mb-1">{{ comment.text|linkify_mentions }}</p>
 
       {% if user.is_authenticated and depth == 0 %}
         <button
-          class="btn btn-link btn-sm p-0 text-muted"
-          style="font-size:0.8rem;"
+          class="comment-reply-btn"
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#reply-form-{{ comment.pk }}"
+          data-collapse-chevron
         >
+          <svg class="icon"><use href="#icon-corner-up-left"></use></svg>
           Відповісти
         </button>
 
 
         <div class="collapse mt-2" id="reply-form-{{ comment.pk }}">
-          <form method="post" action="{% url 'comment_create' post.pk %}">
+          <form method="post" action="{% url 'comment_create' post.pk %}" class="d-flex gap-2">
             {% csrf_token %}
             <input type="hidden" name="parent_id" value="{{ comment.pk }}">
-            <textarea
+            <input
+              type="text"
               name="text"
-              rows="2"
-              class="form-control form-control-sm mb-1"
+              class="form-control form-control-sm"
               placeholder="Відповісти {{ comment.author.username }}..."
-            ></textarea>
-            <button type="submit" class="btn btn-primary btn-sm">Відправити</button>
+            >
+            <button type="submit" class="btn btn-primary btn-sm flex-shrink-0">Відправити</button>
           </form>
         </div>
       {% endif %}

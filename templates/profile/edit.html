@@ -1,9 +1,14 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Редагування профілю — SocialNet{% endblock %}
 
+{% block extra_css %}
+  <link href="{% static 'css/profile.css' %}" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
-<div class="row">
+<div class="row justify-content-center">
   <div class="col-12 col-md-6">
 
     <h1 class="h4 mb-4">Редагувати профіль</h1>
@@ -16,7 +21,7 @@
       </div>
     {% endif %}
 
-    <form method="post" enctype="multipart/form-data" novalidate>
+    <form method="post" enctype="multipart/form-data" novalidate class="surface-card p-4">
       {% csrf_token %}
 
 
@@ -124,12 +129,8 @@
           {{ form.avatar.label }}
         </label>
         {% if request.user.profile.avatar %}
-          <div class="mb-1">
-            <img src="{{ request.user.profile.avatar.url }}"
-                 width="60" height="60"
-                 class="rounded-circle"
-                 style="object-fit:cover;"
-                 alt="Поточний аватар">
+          <div class="mb-2">
+            <img src="{{ request.user.profile.avatar.url }}" class="avatar avatar-lg" alt="Поточний аватар">
           </div>
         {% endif %}
         <input
@@ -150,7 +151,7 @@
           {{ form.cover.label }}
         </label>
         {% if request.user.profile.cover %}
-          <div class="mb-1">
+          <div class="mb-2">
             <img src="{{ request.user.profile.cover.url }}"
                  class="img-fluid rounded"
                  style="max-height:80px;"
@@ -170,7 +171,7 @@
       </div>
 
       <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary">Зберегти</button>
+        <button type="submit" class="btn btn-brand">Зберегти</button>
         <a href="{% url 'profile' request.user.username %}"
            class="btn btn-outline-secondary">Скасувати</a>
       </div>

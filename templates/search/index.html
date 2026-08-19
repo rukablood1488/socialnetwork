@@ -3,14 +3,19 @@
 
 {% block title %}Пошук — SocialNet{% endblock %}
 
+{% block extra_css %}
+  <link href="{% static 'css/search.css' %}" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-12 col-md-7">
 
     <h1 class="h4 mb-3">Пошук</h1>
 
-    
-    <div class="mb-4 position-relative">
+
+    <div class="mb-4 search-input-wrap">
+      <svg class="icon search-icon" width="18" height="18"><use href="#icon-search"></use></svg>
       <input
         type="text"
         id="search-input"
@@ -19,15 +24,12 @@
         autocomplete="off"
         autofocus
       >
-      <div id="search-spinner"
-           class="spinner-border spinner-border-sm text-secondary position-absolute d-none"
-           style="right:12px; top:50%; transform:translateY(-50%);"
-           role="status">
-        <span class="visually-hidden">Пошук...</span>
-      </div>
+      <span id="search-spinner" class="search-loader d-none">
+        <svg class="icon spin"><use href="#icon-loader-2"></use></svg>
+      </span>
     </div>
 
-    
+
     <div id="search-results" data-search-url="{% url 'search_results' %}">
       <p class="text-muted text-center py-4">Почніть вводити, щоб знайти користувачів або групи.</p>
     </div>

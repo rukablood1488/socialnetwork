@@ -3,92 +3,17 @@
 
 {% block title %}Повідомлення — SocialNet{% endblock %}
 
-{% block extra_css %}
-<style>
-  .chat-shell {
-    display: flex;
-    height: 75vh;
-    border: 1px solid var(--bs-border-color);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  .chat-sidebar {
-    width: 320px;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    border-right: 1px solid var(--bs-border-color);
-  }
-  .chat-sidebar-list {
-    flex: 1 1 auto;
-    overflow-y: auto;
-  }
-  .chat-main {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-  }
-  .chat-item-row {
-    position: relative;
-    border-bottom: 1px solid var(--bs-border-color);
-  }
-  .chat-item-row.active {
-    background: var(--bs-tertiary-bg, #f1f1f1);
-  }
-  .chat-item-row:hover {
-    background: var(--bs-tertiary-bg, #f8f9fa);
-  }
-  .chat-item-link {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    padding-right: 2.2rem;
-    text-decoration: none;
-    color: inherit;
-  }
-  .chat-remove-form {
-    position: absolute;
-    top: 50%;
-    right: 6px;
-    transform: translateY(-50%);
-    margin: 0;
-  }
-  .chat-remove-btn {
-    opacity: 0;
-    transition: opacity .15s;
-    width: 22px;
-    height: 22px;
-    padding: 0;
-    line-height: 1;
-    font-size: 0.85rem;
-  }
-  .chat-item-row:hover .chat-remove-btn {
-    opacity: 1;
-  }
-  .chat-item-row:hover .chat-unread-badge {
-    display: none;
-  }
-  @media (max-width: 767px) {
-    .chat-shell { flex-direction: column; height: auto; }
-    .chat-sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--bs-border-color); }
-    .chat-main { min-height: 60vh; }
-  }
-</style>
-{% endblock %}
-
 {% block content %}
 
 
 <form id="csrf-form" class="d-none">{% csrf_token %}</form>
 
-<div class="chat-shell">
+<div class="chat-shell anim-fade-in-up">
 
 
   <div class="chat-sidebar">
 
-    <div class="p-3 border-bottom">
+    <div class="p-3 border-bottom" style="border-color: var(--border-color) !important;">
       <div class="d-flex justify-content-between align-items-center mb-2">
         <h1 class="h6 mb-0">Повідомлення</h1>
         <div class="d-flex gap-1">
@@ -116,8 +41,7 @@
           data-mention-url="{% url 'mention_suggest' %}"
         >
         <div id="sidebar-search-results"
-             class="list-group position-absolute w-100 d-none"
-             style="z-index:1000; max-height:260px; overflow-y:auto;"></div>
+             class="list-group position-absolute w-100 d-none chat-sidebar-search-results"></div>
       </div>
     </div>
 
@@ -129,22 +53,13 @@
             <a href="{% url 'chat_detail' item.chat.pk %}" class="chat-item-link">
 
               {% if item.chat.is_group %}
-                <div class="rounded-circle bg-primary d-flex align-items-center
-                            justify-content-center text-white flex-shrink-0"
-                     style="width:44px;height:44px;">
+                <div class="chat-icon-avatar avatar-md">
                      <svg class="icon" width="20" height="20"><use href="#icon-users"></use></svg>
                   </div>
               {% elif item.other_user.profile.avatar %}
-                <img src="{{ item.other_user.profile.avatar.url }}"
-                     width="44" height="44"
-                     class="rounded-circle flex-shrink-0"
-                     style="object-fit:cover;" alt="">
+                <img src="{{ item.other_user.profile.avatar.url }}" class="avatar avatar-md" alt="">
               {% else %}
-                <div class="rounded-circle bg-secondary d-flex align-items-center
-                            justify-content-center text-white flex-shrink-0"
-                     style="width:44px;height:44px;">
-                  {{ item.other_user.username|first|upper|default:"?" }}
-                </div>
+                <div class="avatar avatar-md">{{ item.other_user.username|first|upper|default:"?" }}</div>
               {% endif %}
 
               <div class="flex-grow-1 min-width-0">
@@ -159,10 +74,10 @@
                   {% if item.last_message %}
                     {% if item.last_message.sender == user %}Ви: {% endif %}
                     {% if item.last_message.text %}{{ item.last_message.text }}
-                    {% elif item.last_message.shared_post %}<svg class="icon" width="20" height="20"><use href="#icon-share-2"></use></svg> Допис
-                    {% elif item.last_message.image %}<svg class="icon" width="20" height="20"><use href="#icon-camera"></use></svg> Фото
-                    {% elif item.last_message.video %}<svg class="icon" width="20" height="20"><use href="#icon-video"></use></svg> Відео
-                    {% elif item.last_message.file %}<svg class="icon" width="20" height="20"><use href="#icon-paperclip"></use></svg> Файл
+                    {% elif item.last_message.shared_post %}<svg class="icon" width="14" height="14"><use href="#icon-share-2"></use></svg> Допис
+                    {% elif item.last_message.image %}<svg class="icon" width="14" height="14"><use href="#icon-camera"></use></svg> Фото
+                    {% elif item.last_message.video %}<svg class="icon" width="14" height="14"><use href="#icon-video"></use></svg> Відео
+                    {% elif item.last_message.file %}<svg class="icon" width="14" height="14"><use href="#icon-paperclip"></use></svg> Файл
                     {% endif %}
                   {% else %}
                     Немає повідомлень
@@ -180,7 +95,7 @@
             <form method="post" action="{% url 'chat_leave' item.chat.pk %}" class="chat-remove-form">
               {% csrf_token %}
               <button type="submit"
-                      class="btn btn-light rounded-circle chat-remove-btn"
+                      class="chat-remove-btn"
                       title="Прибрати з панелі"
                       onclick="return confirm('{% if item.chat.is_group %}Вийти з групового чату?{% else %}Прибрати чат зі списку?{% endif %}')">
                 ✕
@@ -195,19 +110,18 @@
     </div>
   </div>
 
-  
+
   <div class="chat-main">
     {% if active_chat %}
       {% include "chat/_active_chat.html" %}
     {% else %}
       <div class="d-flex flex-column align-items-center justify-content-center flex-grow-1 text-center text-muted p-4">
-        <div class="rounded-circle border d-flex align-items-center justify-content-center mb-3"
-             style="width:80px;height:80px;font-size:2rem;">
-             <svg class="icon" width="20" height="20"><use href="#icon-send"></use></svg>
+        <div class="chat-empty-hero mb-3">
+             <svg class="icon" width="24" height="24"><use href="#icon-send"></use></svg>
         </div>
-        <h2 class="h5">Ваші повідомлення</h2>
+        <h2 class="h5 text-body">Ваші повідомлення</h2>
         <p class="small mb-3">Надсилайте приватні повідомлення другу або групі</p>
-        <button type="button" class="btn btn-primary btn-sm"
+        <button type="button" class="btn btn-brand btn-sm"
                 onclick="document.getElementById('sidebar-chat-search').focus()">
           Надіслати повідомлення
         </button>

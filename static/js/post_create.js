@@ -41,13 +41,13 @@
       const video = document.createElement('video');
       video.src = url;
       video.controls = true;
-      video.className = 'w-100 rounded';
+      video.className = 'w-100 rounded anim-scale-in';
       video.style.maxHeight = '420px';
       preview.appendChild(video);
     } else {
       const img = document.createElement('img');
       img.src = url;
-      img.className = 'w-100 rounded';
+      img.className = 'w-100 rounded anim-scale-in';
       img.style.maxHeight = '420px';
       img.style.objectFit = 'contain';
       preview.appendChild(img);
@@ -56,12 +56,13 @@
     btnNext.disabled = false;
   });
 
-  
+
   if (btnNext) {
     btnNext.addEventListener('click', function () {
       if (!input.files[0]) return;
       step1.classList.add('d-none');
       step2.classList.remove('d-none');
+      step2.classList.add('anim-fade-in-up');
     });
   }
 
@@ -69,10 +70,11 @@
     btnBack.addEventListener('click', function () {
       step2.classList.add('d-none');
       step1.classList.remove('d-none');
+      step1.classList.add('anim-fade-in-up');
     });
   }
 
-  } 
+  }
 
   const captionInput = document.getElementById('caption-input');
   const dropdown      = document.getElementById('mention-dropdown');
@@ -80,7 +82,7 @@
   if (captionInput && dropdown) {
     const mentionUrl = captionInput.dataset.mentionUrl;
     let debounceTimer = null;
-    let activeStart = -1; 
+    let activeStart = -1;
 
     captionInput.addEventListener('input', function () {
       const cursorPos = captionInput.selectionStart;

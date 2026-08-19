@@ -9,22 +9,13 @@
         data-is-group="{{ item.chat.is_group|yesno:'1,0' }}"
       >
         {% if item.chat.is_group %}
-          <div class="rounded-circle bg-primary d-flex align-items-center
-                      justify-content-center text-white flex-shrink-0"
-               style="width:38px;height:38px;">
+          <div class="chat-icon-avatar avatar-sm">
             <svg class="icon" width="16" height="16"><use href="#icon-users"></use></svg>
           </div>
         {% elif item.other_user.profile.avatar %}
-          <img src="{{ item.other_user.profile.avatar.url }}"
-               width="38" height="38"
-               class="rounded-circle flex-shrink-0"
-               style="object-fit:cover;" alt="">
+          <img src="{{ item.other_user.profile.avatar.url }}" class="avatar avatar-sm" alt="">
         {% else %}
-          <div class="rounded-circle bg-secondary d-flex align-items-center
-                      justify-content-center text-white flex-shrink-0"
-               style="width:38px;height:38px;">
-            {{ item.other_user.username|first|upper|default:"?" }}
-          </div>
+          <div class="avatar avatar-sm">{{ item.other_user.username|first|upper|default:"?" }}</div>
         {% endif %}
 
         <div class="flex-grow-1 min-width-0">
