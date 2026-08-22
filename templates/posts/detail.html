@@ -97,12 +97,12 @@
                 {% if user.is_authenticated %}
                   <button type="submit" class="action-btn like-btn {% if user_liked %}is-liked{% endif %}">
                     <svg class="icon" {% if user_liked %}fill="currentColor"{% endif %}><use href="#icon-heart"></use></svg>
-                    {{ likes_count }}
+                    <span class="like-count">{{ likes_count }}</span>
                   </button>
                 {% else %}
                   <span class="action-btn disabled">
                     <svg class="icon"><use href="#icon-heart"></use></svg>
-                    {{ likes_count }}
+                    <span class="like-count">{{ likes_count }}</span>
                   </span>
                 {% endif %}
                 <span class="like-burst">
@@ -116,13 +116,13 @@
                 {% csrf_token %}
                 <button type="submit" class="action-btn repost-btn {% if user_reposted %}is-reposted{% endif %}">
                   <svg class="icon"><use href="#icon-repeat-2"></use></svg>
-                  {{ repost_count }}
+                  <span class="repost-count">{{ repost_count }}</span>
                 </button>
               </form>
             {% else %}
               <span class="action-btn disabled">
                 <svg class="icon"><use href="#icon-repeat-2"></use></svg>
-                {{ repost_count }}
+                <span class="repost-count">{{ repost_count }}</span>
               </span>
             {% endif %}
 
