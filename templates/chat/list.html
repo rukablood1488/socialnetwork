@@ -3,35 +3,47 @@
 
 {% block title %}Повідомлення — SocialNet{% endblock %}
 
+{% block main_class %}p-0{% endblock %}
+
 {% block content %}
 
 
 <form id="csrf-form" class="d-none">{% csrf_token %}</form>
 
-<div class="chat-shell anim-fade-in-up">
+<div class="chat-shell">
 
 
   <div class="chat-sidebar">
 
-    <div class="p-3 border-bottom" style="border-color: var(--border-color) !important;">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <h1 class="h6 mb-0">Повідомлення</h1>
-        <div class="d-flex gap-1">
+    <div class="chat-sidebar-top">
+
+      <div class="chat-sidebar-heading">
+        <span class="chat-username">{{ user.username }}</span>
+        <svg class="icon chat-heading-chevron" width="16" height="16"><use href="#icon-chevron-down"></use></svg>
+
+        <div class="chat-sidebar-actions">
           {% if request.GET.from == 'popup' %}
             <button type="button"
-                    class="btn btn-outline-secondary btn-sm"
+                    class="btn-icon"
                     title="Згорнути"
                     onclick="history.back()">
-              <svg class="icon" width="20" height="20"><use href="#icon-minimize-2"></use></svg>
+              <svg class="icon" width="18" height="18"><use href="#icon-minimize-2"></use></svg>
             </button>
           {% endif %}
-          <a href="{% url 'chat_create_group' %}" class="btn btn-outline-primary btn-sm" title="Груповий чат">
+          <a href="{% url 'chat_create_group' %}" class="btn-icon" title="Груповий чат">
             <svg class="icon" width="20" height="20"><use href="#icon-users"></use></svg>
           </a>
+          <button type="button"
+                  class="btn-icon"
+                  title="Нове повідомлення"
+                  onclick="document.getElementById('sidebar-chat-search').focus()">
+            <svg class="icon" width="20" height="20"><use href="#icon-square-pen"></use></svg>
+          </button>
         </div>
       </div>
 
-      <div class="position-relative">
+      <div class="chat-search-wrap">
+        <svg class="icon search-icon" width="16" height="16"><use href="#icon-search"></use></svg>
         <input
           type="text"
           id="sidebar-chat-search"
@@ -43,6 +55,12 @@
         <div id="sidebar-search-results"
              class="list-group position-absolute w-100 d-none chat-sidebar-search-results"></div>
       </div>
+
+      <div class="chat-tabs">
+        <button type="button" class="chat-tab is-active">Повідомлення</button>
+        <button type="button" class="chat-tab is-disabled" disabled title="Ця функція ще не реалізована">Requests</button>
+      </div>
+
     </div>
 
     <div class="chat-sidebar-list">
@@ -117,11 +135,11 @@
     {% else %}
       <div class="d-flex flex-column align-items-center justify-content-center flex-grow-1 text-center text-muted p-4">
         <div class="chat-empty-hero mb-3">
-             <svg class="icon" width="24" height="24"><use href="#icon-send"></use></svg>
+             <svg class="icon"><use href="#icon-send"></use></svg>
         </div>
-        <h2 class="h5 text-body">Ваші повідомлення</h2>
-        <p class="small mb-3">Надсилайте приватні повідомлення другу або групі</p>
-        <button type="button" class="btn btn-brand btn-sm"
+        <h2 class="h4 text-body mb-2">Ваші повідомлення</h2>
+        <p class="mb-3">Надсилайте приватні повідомлення другу або групі</p>
+        <button type="button" class="btn btn-brand"
                 onclick="document.getElementById('sidebar-chat-search').focus()">
           Надіслати повідомлення
         </button>

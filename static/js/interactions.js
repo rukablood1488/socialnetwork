@@ -1,49 +1,85 @@
 (function () {
 
   var REDUCE_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var ANIM_DELAY = REDUCE_MOTION ? 0 : 260;
 
-  function submitAfter(form, delay) {
-    if (!delay) { form.submit(); return; }
-    window.setTimeout(function () { form.submit(); }, delay);
+  function getCount(btn) {
+    var el = btn.querySelector('.like-count, .repost-count');
+    if (!el) return null;
+    var n = parseInt(el.textContent.trim(), 10);
+    return isNaN(n) ? null : n;
   }
 
-  
+  function setCount(btn, value) {
+    var el = btn.querySelector('.like-count, .repost-count');
+    if (el) el.textContent = Math.max(0, value);
+  }
+
+  function postInBackground(form) {
+    return fetch(form.action, {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      body: new FormData(form),
+      credentials: 'same-origin',
+    });
+  }
+
+
   document.querySelectorAll('form.like-form').forEach(function (form) {
     form.addEventListener('submit', function (e) {
       var btn = form.querySelector('.like-btn');
-      if (!btn || form.dataset.animating === '1') return;
-
       e.preventDefault();
-      form.dataset.animating = '1';
+      if (!btn || form.dataset.busy === '1') return;
+      form.dataset.busy = '1';
 
       var willLike = !btn.classList.contains('is-liked');
-      btn.classList.toggle('is-liked', willLike);
+      var before = getCount(btn);
 
-      if (willLike) {
+      btn.classList.toggle('is-liked', willLike);
+      if (before !== null) setCount(btn, before + (willLike ? 1 : -1));
+
+      if (willLike && !REDUCE_MOTION) {
         var burst = form.querySelector('.like-burst');
         if (burst) {
           burst.classList.remove('is-active');
-         
-          void burst.offsetWidth;
+          void burst.offsetWidth; 
           burst.classList.add('is-active');
         }
       }
 
-      submitAfter(form, ANIM_DELAY);
+      postInBackground(form)
+        .catch(function () {
+          // мережа підвела — повертаємо як було
+          btn.classList.toggle('is-liked', !willLike);
+          if (before !== null) setCount(btn, before);
+        })
+        .finally(function () {
+          form.dataset.busy = '0';
+        });
     });
   });
 
-  
+ 
   document.querySelectorAll('form.repost-form').forEach(function (form) {
     form.addEventListener('submit', function (e) {
       var btn = form.querySelector('.repost-btn');
-      if (!btn || form.dataset.animating === '1') return;
-
       e.preventDefault();
-      form.dataset.animating = '1';
-      btn.classList.toggle('is-reposted');
-      submitAfter(form, ANIM_DELAY);
+      if (!btn || form.dataset.busy === '1') return;
+      form.dataset.busy = '1';
+
+      var willRepost = !btn.classList.contains('is-reposted');
+      var before = getCount(btn);
+
+      btn.classList.toggle('is-reposted', willRepost);
+      if (before !== null) setCount(btn, before + (willRepost ? 1 : -1));
+
+      postInBackground(form)
+        .catch(function () {
+          btn.classList.toggle('is-reposted', !willRepost);
+          if (before !== null) setCount(btn, before);
+        })
+        .finally(function () {
+          form.dataset.busy = '0';
+        });
     });
   });
 
@@ -59,7 +95,7 @@
       var alreadyLiked = btn && btn.classList.contains('is-liked');
 
       var overlay = media.querySelector('.dbltap-heart');
-      if (overlay) {
+      if (overlay && !REDUCE_MOTION) {
         overlay.classList.remove('is-active');
         void overlay.offsetWidth;
         overlay.classList.add('is-active');
