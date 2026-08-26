@@ -1,5 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
@@ -219,16 +220,21 @@ class ChatDeleteView(LoginRequiredMixin, View):
 
 
 class PostShareView(LoginRequiredMixin, View):
-    def post(self, request, pk, chat_id):
+    def post(self, request, pk):
         post = get_object_or_404(Post, pk=pk)
-        chat = get_object_or_404(Chat, pk=chat_id, participants=request.user)
+        text = request.POST.get('text', '').strip()
+        chat_ids = request.POST.getlist('chat_ids')
 
-        Message.objects.create(chat=chat, sender=request.user, shared_post=post)
+        chats = Chat.objects.filter(pk__in=chat_ids, participants=request.user)
 
-        referer = request.META.get('HTTP_REFERER')
-        if referer:
-            return redirect(referer)
-        return redirect('post_detail', pk=post.pk)
+        sent_to = 0
+        for chat in chats:
+            Message.objects.create(chat=chat, sender=request.user, shared_post=post)
+            if text:
+                Message.objects.create(chat=chat, sender=request.user, text=text)
+            sent_to += 1
 
-    def get(self, request, pk, chat_id):
+        return JsonResponse({'ok': True, 'sent_to': sent_to})
+
+    def get(self, request, pk):
         return redirect('post_detail', pk=pk)
