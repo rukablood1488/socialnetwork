@@ -46,28 +46,63 @@
 </div>
 
 
-<form method="post" action="{% url 'message_send' active_chat.pk %}"
-      enctype="multipart/form-data"
-      class="chat-send-form">
-  {% csrf_token %}
+{% if is_incoming_pending %}
+  <div class="chat-request-banner">
+    <p class="mb-2 small text-muted">
+      <strong>{{ other_user.username }}</strong> хоче написати вам повідомлення.
+      Прийміть запит, щоб відповісти, або відхиліть його.
+    </p>
+    <div class="d-flex gap-2">
+      <form method="post" action="{% url 'chat_accept_request' active_chat.pk %}" class="flex-fill">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-brand w-100 btn-sm">Прийняти</button>
+      </form>
+      <form method="post" action="{% url 'chat_decline_request' active_chat.pk %}" class="flex-fill">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-danger w-100 btn-sm"
+                onclick="return confirm('Відхилити запит на повідомлення?')">
+          Відхилити
+        </button>
+      </form>
+    </div>
+  </div>
 
-  <label class="btn-icon" title="Додати файл">
-    <svg class="icon" width="20" height="20"><use href="#icon-paperclip"></use></svg>
-    <input type="file" name="file" class="d-none">
-  </label>
-  <label class="btn-icon" title="Додати фото">
-    <svg class="icon" width="20" height="20"><use href="#icon-image"></use></svg>
-    <input type="file" name="image" accept="image/*" class="d-none">
-  </label>
+{% elif is_pending_awaiting %}
+  <div class="chat-request-banner text-center">
+    <p class="mb-0 small text-muted">
+      Запит на повідомлення надіслано. Ви зможете писати далі, коли
+      <strong>{{ other_user.username }}</strong> його прийме.
+    </p>
+  </div>
 
-  <input
-    type="text"
-    name="text"
-    class="form-control"
-    placeholder="Написати повідомлення..."
-    autocomplete="off"
-  >
-  <button type="submit" class="btn btn-brand btn-sm flex-shrink-0">
-    <svg class="icon" width="18" height="18"><use href="#icon-send"></use></svg>
-  </button>
-</form>
+{% else %}
+  <form method="post" action="{% url 'message_send' active_chat.pk %}"
+        enctype="multipart/form-data"
+        class="chat-send-form">
+    {% csrf_token %}
+
+    <label class="btn-icon" title="Додати файл">
+      <svg class="icon" width="20" height="20"><use href="#icon-paperclip"></use></svg>
+      <input type="file" name="file" class="d-none">
+    </label>
+    <label class="btn-icon" title="Додати фото">
+      <svg class="icon" width="20" height="20"><use href="#icon-image"></use></svg>
+      <input type="file" name="image" accept="image/*" class="d-none">
+    </label>
+
+    <input
+      type="text"
+      name="text"
+      class="form-control"
+      placeholder="{% if show_request_composer %}Напишіть повідомлення-запит...{% else %}Написати повідомлення...{% endif %}"
+      autocomplete="off"
+    >
+    <button type="submit" class="btn btn-brand btn-sm flex-shrink-0">
+      {% if show_request_composer %}
+        Надіслати запит
+      {% else %}
+        <svg class="icon" width="18" height="18"><use href="#icon-send"></use></svg>
+      {% endif %}
+    </button>
+  </form>
+{% endif %}

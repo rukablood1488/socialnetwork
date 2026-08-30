@@ -4,17 +4,46 @@
   {% include "chat/_messages.html" %}
 </div>
 
-<form id="popup-send-form"
-      class="chat-popup-send-form"
-      data-send-url="{% url 'message_send' chat.pk %}">
-  <input
-    type="text"
-    name="text"
-    class="form-control form-control-sm"
-    placeholder="Повідомлення..."
-    autocomplete="off"
-  >
-  <button type="submit" class="btn btn-brand btn-sm">
-    <svg class="icon" width="16" height="16"><use href="#icon-send"></use></svg>
-  </button>
-</form>
+{% if is_incoming_pending %}
+  <div class="chat-request-banner">
+    <p class="mb-2 small text-muted">
+      <strong>{{ other_user.username }}</strong> хоче написати вам повідомлення.
+    </p>
+    <div class="d-flex gap-2">
+      <form method="post" action="{% url 'chat_accept_request' chat.pk %}" class="flex-fill">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-brand w-100 btn-sm">Прийняти</button>
+      </form>
+      <form method="post" action="{% url 'chat_decline_request' chat.pk %}" class="flex-fill">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-danger w-100 btn-sm"
+                onclick="return confirm('Відхилити запит на повідомлення?')">
+          Відхилити
+        </button>
+      </form>
+    </div>
+  </div>
+
+{% elif is_pending_awaiting %}
+  <div class="chat-request-banner text-center">
+    <p class="mb-0 small text-muted">
+      Запит надіслано, очікуємо підтвердження.
+    </p>
+  </div>
+
+{% else %}
+  <form id="popup-send-form"
+        class="chat-popup-send-form"
+        data-send-url="{% url 'message_send' chat.pk %}">
+    <input
+      type="text"
+      name="text"
+      class="form-control form-control-sm"
+      placeholder="{% if show_request_composer %}Повідомлення-запит...{% else %}Повідомлення...{% endif %}"
+      autocomplete="off"
+    >
+    <button type="submit" class="btn btn-brand btn-sm">
+      <svg class="icon" width="16" height="16"><use href="#icon-send"></use></svg>
+    </button>
+  </form>
+{% endif %}

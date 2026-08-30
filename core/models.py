@@ -342,7 +342,11 @@ class GroupMembership(models.Model):
 
 
 class Chat(models.Model):
-    
+
+    class Status(models.TextChoices):
+        ACCEPTED = 'accepted', 'Прийнято'
+        PENDING  = 'pending',  'Очікує підтвердження'
+
     name = models.CharField(
         max_length=150,
         blank=True,
@@ -365,6 +369,16 @@ class Chat(models.Model):
         blank=True,
         related_name='created_chats', 
         verbose_name='Створив(ла)',
+    )
+    status = models.CharField(
+        max_length=10,
+        choices=Status.choices,
+        default=Status.ACCEPTED,
+        verbose_name='Статус',
+        help_text=(
+            'Для приватного чату зі стороннім користувачем (не другом) — '
+            '"Очікує підтвердження", доки одержувач не прийме запит на повідомлення.'
+        ),
     )
     created_at = models.DateTimeField(
         auto_now_add=True,
@@ -507,60 +521,3 @@ class Notification(models.Model):
  
     def __str__(self):
         return f'[{self.get_notification_type_display()}] для {self.recipient.username}'
-
-
-
-# ВІДГУКИ ТА РЕЙТИНГ
-
-
-class Review(models.Model):
-
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='reviews',
-        verbose_name='Автор відгуку',
-    )
-    
-    post = models.ForeignKey(
-        Post,
-        on_delete=models.CASCADE,
-        related_name='reviews',
-        blank=True,
-        null=True,
-        verbose_name='Публікація',
-    )
-    group = models.ForeignKey(
-        Group,
-        on_delete=models.CASCADE,
-        related_name='reviews',
-        blank=True,
-        null=True,
-        verbose_name='Група',
-    )
-    rating = models.PositiveSmallIntegerField(
-        choices=[(i, str(i)) for i in range(1, 6)],
-        verbose_name='Оцінка (1–5)',
-    )
-    text = models.TextField(
-        blank=True,
-        default='',
-        verbose_name='Текст відгуку',
-    )
-    is_approved = models.BooleanField(
-        default=True,
-        verbose_name='Схвалено адміністратором',
-    )
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата відгуку',
-    )
-
-    class Meta:
-        verbose_name = 'Відгук'
-        verbose_name_plural = 'Відгуки'
-        ordering = ['-created_at']
-
-    def __str__(self):
-        target = f'пост #{self.post_id}' if self.post_id else f'групу "{self.group}"'
-        return f'Відгук від {self.author.username} на {target} ({self.rating}★)'

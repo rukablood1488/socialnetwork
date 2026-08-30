@@ -57,13 +57,16 @@
       </div>
 
       <div class="chat-tabs">
-        <button type="button" class="chat-tab is-active">Повідомлення</button>
-        <button type="button" class="chat-tab is-disabled" disabled title="Ця функція ще не реалізована">Requests</button>
+        <button type="button" class="chat-tab is-active" data-chat-tab="primary">Повідомлення</button>
+        <button type="button" class="chat-tab" data-chat-tab="requests">
+          Requests
+          {% if request_data %}<span class="chat-tab-badge">{{ request_data|length }}</span>{% endif %}
+        </button>
       </div>
 
     </div>
 
-    <div class="chat-sidebar-list">
+    <div class="chat-sidebar-list" data-chat-list="primary">
       {% if chat_data %}
         {% for item in chat_data %}
           <div class="chat-item-row {% if active_chat and active_chat.pk == item.chat.pk %}active{% endif %}">
@@ -81,11 +84,16 @@
               {% endif %}
 
               <div class="flex-grow-1 min-width-0">
-                <div class="{% if item.unread_count %}fw-semibold{% endif %} text-truncate small">
-                  {% if item.chat.is_group %}
-                    {{ item.chat.name|default:"Груповий чат" }}
-                  {% else %}
-                    {{ item.other_user.get_full_name|default:item.other_user.username }}
+                <div class="{% if item.unread_count %}fw-semibold{% endif %} text-truncate small d-flex align-items-center gap-1">
+                  <span class="text-truncate">
+                    {% if item.chat.is_group %}
+                      {{ item.chat.name|default:"Груповий чат" }}
+                    {% else %}
+                      {{ item.other_user.get_full_name|default:item.other_user.username }}
+                    {% endif %}
+                  </span>
+                  {% if item.chat.status == 'pending' %}
+                    <span class="chat-pending-badge flex-shrink-0">Запит</span>
                   {% endif %}
                 </div>
                 <div class="text-muted text-truncate" style="font-size:0.78rem;">
@@ -124,6 +132,34 @@
         {% endfor %}
       {% else %}
         <p class="text-muted small text-center p-3">Чатів ще немає.</p>
+      {% endif %}
+    </div>
+
+    <div class="chat-sidebar-list d-none" data-chat-list="requests">
+      {% if request_data %}
+        {% for item in request_data %}
+          <div class="chat-item-row {% if active_chat and active_chat.pk == item.chat.pk %}active{% endif %}">
+            <a href="{% url 'chat_detail' item.chat.pk %}" class="chat-item-link" style="padding-right:1rem;">
+
+              {% if item.other_user.profile.avatar %}
+                <img src="{{ item.other_user.profile.avatar.url }}" class="avatar avatar-md" alt="">
+              {% else %}
+                <div class="avatar avatar-md">{{ item.other_user.username|first|upper|default:"?" }}</div>
+              {% endif %}
+
+              <div class="flex-grow-1 min-width-0">
+                <div class="fw-semibold text-truncate small">
+                  {{ item.other_user.get_full_name|default:item.other_user.username }}
+                </div>
+                <div class="text-muted text-truncate" style="font-size:0.78rem;">
+                  Запит на повідомлення
+                </div>
+              </div>
+            </a>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted small text-center p-3">Запитів немає.</p>
       {% endif %}
     </div>
   </div>
