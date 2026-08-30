@@ -1,39 +1,66 @@
 <div class="modal fade" id="share-modal-{{ post.pk }}" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content anim-scale-in">
-      <div class="modal-header">
-        <h5 class="modal-title">Поділитись дописом</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрити"></button>
-      </div>
-      <div class="modal-body">
-        {% if share_chats %}
-          <div class="d-flex flex-column gap-1">
-            {% for item in share_chats %}
-              <form method="post" action="{% url 'post_share' post.pk item.chat.pk %}">
-                {% csrf_token %}
-                <button type="submit" class="share-target-btn">
+    <div class="modal-content share-modal-content anim-scale-in" data-share-url="{% url 'post_share' post.pk %}">
 
-                  {% if item.chat.is_group %}
-                    <div class="avatar avatar-sm" style="background:var(--brand-gradient); color:#fff;">
-                      <svg class="icon" width="16" height="16"><use href="#icon-users"></use></svg>
-                    </div>
-                  {% elif item.avatar_user.profile.avatar %}
-                    <img src="{{ item.avatar_user.profile.avatar.url }}" class="avatar avatar-sm" alt="">
-                  {% else %}
-                    <div class="avatar avatar-sm">{{ item.label|first|upper }}</div>
-                  {% endif %}
+      {% csrf_token %}
 
-                  <span>{{ item.label }}</span>
-                </button>
-              </form>
-            {% endfor %}
-          </div>
-        {% else %}
-          <p class="text-muted small mb-0">
-            У вас ще немає чатів. Спочатку напишіть комусь повідомлення.
-          </p>
-        {% endif %}
+      <div class="share-modal-header">
+        <button type="button" class="btn-icon" title="Пошук"
+                onclick="this.closest('.share-modal-content').querySelector('.share-search-input')?.focus()">
+          <svg class="icon" width="20" height="20"><use href="#icon-search"></use></svg>
+        </button>
+        <h5 class="share-modal-title">Поділитися</h5>
+        <button type="button" class="btn-icon" data-bs-dismiss="modal" aria-label="Закрити">
+          <svg class="icon" width="20" height="20"><use href="#icon-x"></use></svg>
+        </button>
       </div>
+
+      {% if share_chats %}
+
+        <div class="share-search-wrap">
+          <input type="text" class="form-control form-control-sm share-search-input" placeholder="Пошук">
+        </div>
+
+        <div class="share-avatar-row">
+          {% for item in share_chats %}
+            <button type="button" class="share-avatar-btn" data-chat-id="{{ item.chat.pk }}" data-name="{{ item.label|lower }}">
+              <span class="share-avatar-circle">
+                {% if item.chat.is_group %}
+                  <span class="avatar" style="background:var(--brand-gradient); color:#fff;">
+                    <svg class="icon" width="22" height="22"><use href="#icon-users"></use></svg>
+                  </span>
+                {% elif item.avatar_user.profile.avatar %}
+                  <img src="{{ item.avatar_user.profile.avatar.url }}" class="avatar" alt="">
+                {% else %}
+                  <span class="avatar">{{ item.label|first|upper }}</span>
+                {% endif %}
+                <span class="share-avatar-check">
+                  <svg class="icon" width="13" height="13" fill="currentColor"><use href="#icon-check"></use></svg>
+                </span>
+              </span>
+              <span class="share-avatar-label text-truncate">{{ item.label }}</span>
+            </button>
+          {% endfor %}
+        </div>
+
+        <div class="share-message-row">
+          <input type="text" class="form-control share-message-input" placeholder="Напиши повідомлення..." maxlength="500">
+          <button type="button" class="share-send-btn" disabled>Надіслати</button>
+        </div>
+
+        <div class="share-confirm">
+          <span class="share-confirm-icon">
+            <svg class="icon" fill="currentColor"><use href="#icon-check"></use></svg>
+          </span>
+          <span>Надіслано</span>
+        </div>
+
+      {% else %}
+        <p class="text-muted small text-center mb-0 px-3 pb-4 pt-2">
+          У вас ще немає чатів. Спочатку напишіть комусь повідомлення.
+        </p>
+      {% endif %}
+
     </div>
   </div>
 </div>

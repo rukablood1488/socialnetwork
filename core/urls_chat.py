@@ -27,5 +27,5 @@ chat_urls = [
 
     path('chat/<int:pk>/delete/', views_chat.ChatDeleteView.as_view(), name='chat_delete'),
 
-    path('posts/<int:pk>/share/<int:chat_id>/', views_chat.PostShareView.as_view(), name='post_share'),
+    path('posts/<int:pk>/share/', views_chat.PostShareView.as_view(), name='post_share'),
 ]
