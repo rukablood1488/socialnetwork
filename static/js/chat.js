@@ -1,5 +1,22 @@
 (function () {
 
+  const chatTabs  = document.querySelectorAll('[data-chat-tab]');
+  const chatLists = document.querySelectorAll('[data-chat-list]');
+
+  if (chatTabs.length && chatLists.length) {
+    chatTabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        chatTabs.forEach(function (t) { t.classList.remove('is-active'); });
+        tab.classList.add('is-active');
+
+        const target = tab.dataset.chatTab;
+        chatLists.forEach(function (list) {
+          list.classList.toggle('d-none', list.dataset.chatList !== target);
+        });
+      });
+    });
+  }
+
   const messagesBox = document.getElementById('messages-box');
 
   if (messagesBox) {

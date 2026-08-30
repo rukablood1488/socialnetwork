@@ -96,21 +96,3 @@ class NotificationAdmin(admin.ModelAdmin):
     list_filter = ('notification_type', 'is_read')
     search_fields = ('recipient__username', 'sender__username', 'text')
     raw_id_fields = ('recipient', 'sender', 'post')
-
-
-@admin.register(Review)
-class ReviewAdmin(admin.ModelAdmin):
-    list_display = ('author', 'post', 'group', 'rating', 'is_approved', 'created_at')
-    list_filter = ('rating', 'is_approved')
-    search_fields = ('author__username', 'text')
-    raw_id_fields = ('author', 'post', 'group')
-    list_editable = ('is_approved',)
-    actions = ['approve_reviews', 'reject_reviews']
-
-    @admin.action(description='✅ Схвалити вибрані відгуки')
-    def approve_reviews(self, request, queryset):
-        queryset.update(is_approved=True)
-
-    @admin.action(description='❌ Відхилити вибрані відгуки')
-    def reject_reviews(self, request, queryset):
-        queryset.update(is_approved=False)

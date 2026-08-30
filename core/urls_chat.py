@@ -23,6 +23,10 @@ chat_urls = [
 
     path('chat/<int:pk>/read/', views_chat.ChatMarkReadView.as_view(), name='chat_mark_read'),
 
+    path('chat/<int:pk>/accept/', views_chat.ChatAcceptRequestView.as_view(), name='chat_accept_request'),
+
+    path('chat/<int:pk>/decline/', views_chat.ChatDeclineRequestView.as_view(), name='chat_decline_request'),
+
     path('chat/<int:pk>/leave/', views_chat.ChatLeaveView.as_view(), name='chat_leave'),
 
     path('chat/<int:pk>/delete/', views_chat.ChatDeleteView.as_view(), name='chat_delete'),

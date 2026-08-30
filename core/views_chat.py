@@ -1,17 +1,20 @@
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
-from .models import Chat, Message, Post
+from .models import Chat, Message, Notification, Post
 from .views import get_friend_ids
 
 
-def _build_chat_sidebar_data(user):
-    chats = Chat.objects.filter(
-        participants=user,
-    ).prefetch_related(
+def _build_chat_sidebar_data(user, chats=None):
+    if chats is None:
+        chats = Chat.objects.filter(participants=user)
+
+    chats = chats.prefetch_related(
         'participants', 'participants__profile', 'messages',
     ).distinct()
 
@@ -40,13 +43,47 @@ def _build_chat_sidebar_data(user):
     return chat_data
 
 
+def _split_chats_for_sidebar(user):
+    all_chats = Chat.objects.filter(participants=user)
+
+    primary = all_chats.exclude(
+        Q(status=Chat.Status.PENDING) & ~Q(creator=user)
+    )
+    incoming_requests = all_chats.filter(
+        status=Chat.Status.PENDING,
+    ).exclude(creator=user)
+
+    return primary, incoming_requests
+
+
+def _pending_flags(chat, user):
+    is_incoming_pending = False
+    is_pending_awaiting = False
+    show_request_composer = False
+
+    if not chat.is_group and chat.status == Chat.Status.PENDING:
+        if chat.creator_id == user.id:
+            if chat.messages.filter(sender=user).exists():
+                is_pending_awaiting = True
+            else:
+                show_request_composer = True
+        else:
+            is_incoming_pending = True
+
+    return is_incoming_pending, is_pending_awaiting, show_request_composer
+
+
 class ChatListView(LoginRequiredMixin, View):
     template_name = 'chat/list.html'
 
     def get(self, request):
-        chat_data = _build_chat_sidebar_data(request.user)
+        primary_qs, requests_qs = _split_chats_for_sidebar(request.user)
+        chat_data = _build_chat_sidebar_data(request.user, primary_qs)
+        request_data = _build_chat_sidebar_data(request.user, requests_qs)
+
         return render(request, self.template_name, {
             'chat_data': chat_data,
+            'request_data': request_data,
             'active_chat': None,
         })
 
@@ -65,7 +102,10 @@ class ChatCreatePrivateView(LoginRequiredMixin, View):
         if existing:
             return redirect('chat_detail', pk=existing.pk)
 
-        chat = Chat.objects.create(is_group=False, creator=request.user)
+        is_friend = target.pk in get_friend_ids(request.user)
+        status = Chat.Status.ACCEPTED if is_friend else Chat.Status.PENDING
+
+        chat = Chat.objects.create(is_group=False, creator=request.user, status=status)
         chat.participants.add(request.user, target)
         return redirect('chat_detail', pk=chat.pk)
 
@@ -116,13 +156,21 @@ class ChatDetailView(LoginRequiredMixin, View):
         if not chat.is_group:
             other_user = chat.participants.exclude(pk=request.user.pk).first()
 
-        chat_data = _build_chat_sidebar_data(request.user)
+        primary_qs, requests_qs = _split_chats_for_sidebar(request.user)
+        chat_data = _build_chat_sidebar_data(request.user, primary_qs)
+        request_data = _build_chat_sidebar_data(request.user, requests_qs)
+
+        is_incoming_pending, is_pending_awaiting, show_request_composer = _pending_flags(chat, request.user)
 
         return render(request, self.template_name, {
             'chat_data': chat_data,
+            'request_data': request_data,
             'active_chat': chat,
             'messages_list': messages_qs,
             'other_user': other_user,
+            'is_incoming_pending': is_incoming_pending,
+            'is_pending_awaiting': is_pending_awaiting,
+            'show_request_composer': show_request_composer,
         })
 
 
@@ -140,7 +188,8 @@ class ChatPopupView(LoginRequiredMixin, View):
     template_name = 'chat/_popup_list.html'
 
     def get(self, request):
-        chat_data = _build_chat_sidebar_data(request.user)
+        primary_qs, _requests_qs = _split_chats_for_sidebar(request.user)
+        chat_data = _build_chat_sidebar_data(request.user, primary_qs)
         return render(request, self.template_name, {'chat_data': chat_data})
 
 
@@ -151,12 +200,80 @@ class ChatPopupConversationView(LoginRequiredMixin, View):
         chat = get_object_or_404(Chat, pk=pk, participants=request.user)
         chat.messages.exclude(sender=request.user).filter(is_read=False).update(is_read=True)
         messages_qs = chat.messages.select_related('sender', 'sender__profile').order_by('created_at')
-        return render(request, self.template_name, {'chat': chat, 'messages_list': messages_qs})
+
+        other_user = None
+        if not chat.is_group:
+            other_user = chat.participants.exclude(pk=request.user.pk).first()
+
+        is_incoming_pending, is_pending_awaiting, show_request_composer = _pending_flags(chat, request.user)
+
+        return render(request, self.template_name, {
+            'chat': chat,
+            'messages_list': messages_qs,
+            'other_user': other_user,
+            'is_incoming_pending': is_incoming_pending,
+            'is_pending_awaiting': is_pending_awaiting,
+            'show_request_composer': show_request_composer,
+        })
+
+
+class ChatAcceptRequestView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        chat = get_object_or_404(
+            Chat, pk=pk, participants=request.user,
+            status=Chat.Status.PENDING,
+        )
+        if chat.creator_id != request.user.id:
+            chat.status = Chat.Status.ACCEPTED
+            chat.save(update_fields=['status'])
+
+            Notification.objects.filter(
+                recipient=request.user, sender_id=chat.creator_id,
+                notification_type=Notification.NotificationType.MESSAGE, is_read=False,
+            ).update(is_read=True)
+
+        return redirect('chat_detail', pk=pk)
+
+    def get(self, request, pk):
+        return redirect('chat_detail', pk=pk)
+
+
+class ChatDeclineRequestView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        chat = get_object_or_404(
+            Chat, pk=pk, participants=request.user,
+            status=Chat.Status.PENDING,
+        )
+        if chat.creator_id != request.user.id:
+            Notification.objects.filter(
+                recipient=request.user, sender_id=chat.creator_id,
+                notification_type=Notification.NotificationType.MESSAGE, is_read=False,
+            ).update(is_read=True)
+            chat.delete()
+        return redirect('chat_list')
+
+    def get(self, request, pk):
+        return redirect('chat_list')
 
 
 class MessageSendView(LoginRequiredMixin, View):
     def post(self, request, pk):
         chat = get_object_or_404(Chat, pk=pk, participants=request.user)
+
+        if not chat.is_group and chat.status == Chat.Status.PENDING:
+            if chat.creator_id == request.user.id:
+                if chat.messages.filter(sender=request.user).exists():
+                    messages.error(
+                        request,
+                        'Ви вже надіслали запит на повідомлення. Зачекайте, поки його приймуть.',
+                    )
+                    return redirect('chat_detail', pk=pk)
+            else:
+                messages.error(
+                    request,
+                    'Спершу потрібно прийняти запит на повідомлення.',
+                )
+                return redirect('chat_detail', pk=pk)
 
         text = request.POST.get('text', '').strip()
         msg = Message(chat=chat, sender=request.user, text=text)
@@ -229,6 +346,12 @@ class PostShareView(LoginRequiredMixin, View):
 
         sent_to = 0
         for chat in chats:
+            if not chat.is_group and chat.status == Chat.Status.PENDING:
+                if chat.creator_id != request.user.id:
+                    continue 
+                if chat.messages.filter(sender=request.user).exists():
+                    continue 
+
             Message.objects.create(chat=chat, sender=request.user, shared_post=post)
             if text:
                 Message.objects.create(chat=chat, sender=request.user, text=text)

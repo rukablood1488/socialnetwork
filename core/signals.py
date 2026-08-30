@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
 
 from .models import *
 
@@ -77,3 +78,63 @@ def notify_on_subscribe(sender, instance, created, **kwargs):
         notification_type=Notification.NotificationType.SUBSCRIBE,
         text=text,
     )
+
+
+def _messages_word(n):
+    n_abs = abs(n) % 100
+    n1 = n_abs % 10
+    if 11 <= n_abs <= 14 or n1 == 0 or n1 >= 5:
+        return 'повідомлень'
+    return 'повідомлення'
+
+
+@receiver(post_save, sender=Message)
+def notify_on_message(sender, instance, created, **kwargs):
+    if not created:
+        return
+
+    chat = instance.chat
+
+    is_request = (
+        not chat.is_group
+        and chat.status == Chat.Status.PENDING
+        and chat.creator_id == instance.sender_id
+    )
+
+    recipients = chat.participants.exclude(pk=instance.sender_id)
+
+    for recipient in recipients:
+        if is_request:
+            Notification.objects.create(
+                recipient=recipient,
+                sender=instance.sender,
+                notification_type=Notification.NotificationType.MESSAGE,
+                text=f'{instance.sender.username} надіслав(ла) запит на повідомлення',
+            )
+            continue
+
+
+        unread_count = Message.objects.filter(
+            chat=chat, sender=instance.sender, is_read=False,
+        ).count()
+
+        text = f'Переглянь {unread_count} {_messages_word(unread_count)} від {instance.sender.username}'
+
+        existing = Notification.objects.filter(
+            recipient=recipient,
+            sender=instance.sender,
+            notification_type=Notification.NotificationType.MESSAGE,
+            is_read=False,
+        ).order_by('-created_at').first()
+
+        if existing:
+            existing.text = text
+            existing.created_at = timezone.now()
+            existing.save(update_fields=['text', 'created_at'])
+        else:
+            Notification.objects.create(
+                recipient=recipient,
+                sender=instance.sender,
+                notification_type=Notification.NotificationType.MESSAGE,
+                text=text,
+            )

@@ -45,6 +45,8 @@ def can_view_user_content(viewer, target_user):
 def get_shareable_chats(user):
     chats = Chat.objects.filter(
         participants=user,
+    ).exclude(
+        Q(status=Chat.Status.PENDING) & ~Q(creator=user)
     ).prefetch_related('participants', 'participants__profile').distinct()
  
     result = []
@@ -785,5 +787,3 @@ class GroupPromoteView(LoginRequiredMixin, View):
  
     def get(self, request, pk, user_id):
         return redirect('group_members', pk=pk)
-
-

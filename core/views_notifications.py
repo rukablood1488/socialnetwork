@@ -2,7 +2,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
-from .models import Notification
+from .models import Chat, Notification
 
 
 class NotificationsView(LoginRequiredMixin, View):
@@ -24,6 +24,14 @@ class NotificationReadView(LoginRequiredMixin, View):
 
         if notification.post_id:
             return redirect('post_detail', pk=notification.post_id)
+
+        if notification.notification_type == Notification.NotificationType.MESSAGE and notification.sender_id:
+            chat = Chat.objects.filter(
+                is_group=False, participants=request.user,
+            ).filter(participants=notification.sender_id).first()
+            if chat:
+                return redirect('chat_detail', pk=chat.pk)
+
         if notification.sender_id:
             return redirect('profile', username=notification.sender.username)
         return redirect('notifications')
