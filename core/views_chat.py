@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
 from .models import Chat, Message, Notification, Post
+from .forms import ChatEditForm
 from .views import get_friend_ids
 
 
@@ -140,6 +141,82 @@ class ChatCreateGroupView(LoginRequiredMixin, View):
         chat = Chat.objects.create(name=name, is_group=True, creator=request.user)
         chat.participants.add(request.user, *participants)
         return redirect('chat_detail', pk=chat.pk)
+
+
+class ChatInfoView(LoginRequiredMixin, View):
+    template_name = 'chat/info.html'
+
+    def get_chat(self, request, pk):
+        return get_object_or_404(Chat, pk=pk, participants=request.user, is_group=True)
+
+    def get(self, request, pk):
+        chat = self.get_chat(request, pk)
+        form = ChatEditForm(instance=chat)
+        return self._render(request, chat, form)
+
+    def post(self, request, pk):
+        chat = self.get_chat(request, pk)
+
+        if chat.creator_id != request.user.id:
+            return redirect('chat_info', pk=pk)
+
+        form = ChatEditForm(request.POST, request.FILES, instance=chat)
+        if form.is_valid():
+            form.save()
+            return redirect('chat_info', pk=pk)
+
+        return self._render(request, chat, form)
+
+    def _render(self, request, chat, form):
+        members = chat.participants.select_related('profile').order_by('username')
+
+        media_messages = chat.messages.filter(
+            Q(image__gt='') | Q(video__gt=''),
+        ).order_by('-created_at')
+
+        return render(request, self.template_name, {
+            'chat': chat,
+            'members': members,
+            'media_messages': media_messages,
+            'is_creator': chat.creator_id == request.user.id,
+            'form': form,
+        })
+
+
+class ChatAddParticipantView(LoginRequiredMixin, View):
+    template_name = 'chat/add_participant.html'
+
+    def get_chat(self, request, pk):
+        return get_object_or_404(Chat, pk=pk, participants=request.user, is_group=True)
+
+    def _addable_friends(self, request, chat):
+        friend_ids = get_friend_ids(request.user)
+        existing_ids = set(chat.participants.values_list('pk', flat=True))
+        addable_ids = friend_ids - existing_ids
+        return addable_ids, User.objects.filter(pk__in=addable_ids).select_related('profile')
+
+    def get(self, request, pk):
+        chat = self.get_chat(request, pk)
+        _addable_ids, friends = self._addable_friends(request, chat)
+        return render(request, self.template_name, {'chat': chat, 'friends': friends})
+
+    def post(self, request, pk):
+        chat = self.get_chat(request, pk)
+        addable_ids, friends = self._addable_friends(request, chat)
+
+        selected_ids = {uid for uid in request.POST.getlist('participants') if uid.isdigit()}
+        selected_ids = {int(uid) for uid in selected_ids} & addable_ids
+
+        if not selected_ids:
+            return render(request, self.template_name, {
+                'chat': chat,
+                'friends': friends,
+                'error': 'Оберіть хоча б одного друга.',
+            })
+
+        to_add = User.objects.filter(pk__in=selected_ids)
+        chat.participants.add(*to_add)
+        return redirect('chat_info', pk=pk)
 
 
 class ChatDetailView(LoginRequiredMixin, View):
@@ -348,9 +425,9 @@ class PostShareView(LoginRequiredMixin, View):
         for chat in chats:
             if not chat.is_group and chat.status == Chat.Status.PENDING:
                 if chat.creator_id != request.user.id:
-                    continue 
+                    continue
                 if chat.messages.filter(sender=request.user).exists():
-                    continue 
+                    continue
 
             Message.objects.create(chat=chat, sender=request.user, shared_post=post)
             if text:

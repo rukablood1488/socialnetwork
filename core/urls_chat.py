@@ -13,6 +13,10 @@ chat_urls = [
 
     path('chat/create-group/', views_chat.ChatCreateGroupView.as_view(), name='chat_create_group'),
 
+    path('chat/<int:pk>/info/', views_chat.ChatInfoView.as_view(), name='chat_info'),
+
+    path('chat/<int:pk>/add-participant/', views_chat.ChatAddParticipantView.as_view(), name='chat_add_participant'),
+
     path('chat/<int:pk>/', views_chat.ChatDetailView.as_view(), name='chat_detail'),
 
     path('chat/<int:pk>/messages/', views_chat.ChatMessagesPollView.as_view(), name='chat_messages_poll'),

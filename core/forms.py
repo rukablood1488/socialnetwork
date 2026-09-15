@@ -206,3 +206,16 @@ class GroupForm(forms.ModelForm):
                 'placeholder': 'Опис групи',
             }),
         }
+
+
+class ChatEditForm(forms.ModelForm):
+    class Meta:
+        model = Chat
+        fields = ['name', 'avatar']
+        labels = {
+            'name': 'Назва групового чату',
+            'avatar': 'Фото чату',
+        }
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'Назва групового чату'}),
+        }

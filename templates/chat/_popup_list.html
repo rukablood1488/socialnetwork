@@ -9,9 +9,13 @@
         data-is-group="{{ item.chat.is_group|yesno:'1,0' }}"
       >
         {% if item.chat.is_group %}
-          <div class="chat-icon-avatar avatar-sm">
-            <svg class="icon" width="16" height="16"><use href="#icon-users"></use></svg>
-          </div>
+          {% if item.chat.avatar %}
+            <img src="{{ item.chat.avatar.url }}" class="avatar avatar-sm" alt="">
+          {% else %}
+            <div class="chat-icon-avatar avatar-sm">
+              <svg class="icon" width="16" height="16"><use href="#icon-users"></use></svg>
+            </div>
+          {% endif %}
         {% elif item.other_user.profile.avatar %}
           <img src="{{ item.other_user.profile.avatar.url }}" class="avatar avatar-sm" alt="">
         {% else %}

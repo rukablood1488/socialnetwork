@@ -92,8 +92,8 @@
 
 
     {% if group.creator_id == request.user.id %}
-      <div class="mt-4 p-3" style="border:1px solid rgba(237,73,86,0.35); border-radius: var(--radius-lg); background: rgba(237,73,86,0.06);">
-        <h2 class="h6" style="color: var(--accent-red);">Небезпечна зона</h2>
+      <div class="mt-4 danger-zone">
+        <h2>Небезпечна зона</h2>
         <p class="small text-muted mb-2">
           Видалення групи незворотне. Всі пости й учасники будуть втрачені.
         </p>

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Додати учасника — SocialNet{% endblock %}
+
+{% block extra_css %}
+  <link href="{% static 'css/chat.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-md-6">
+
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <a href="{% url 'chat_info' chat.pk %}" class="btn-icon">
+        <svg class="icon"><use href="#icon-arrow-left"></use></svg>
+      </a>
+      <div>
+        <h1 class="h6 mb-0">Додати учасника</h1>
+        <p class="text-muted small mb-0">До чату «{{ chat.name|default:"Груповий чат" }}»</p>
+      </div>
+    </div>
+
+    {% if error %}
+      <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" class="surface-card p-4">
+      {% csrf_token %}
+
+      {% if friends %}
+        <div class="friend-picker p-2 mb-3">
+          {% for friend in friends %}
+            <label class="friend-picker-item">
+              <input type="checkbox" name="participants" value="{{ friend.pk }}" class="form-check-input mt-0">
+
+              {% if friend.profile.avatar %}
+                <img src="{{ friend.profile.avatar.url }}" class="avatar avatar-sm" alt="">
+              {% else %}
+                <div class="avatar avatar-sm">{{ friend.username|first|upper }}</div>
+              {% endif %}
+
+              <div>
+                <div class="fw-semibold small">{{ friend.get_full_name|default:friend.username }}</div>
+                <div class="text-muted small">@{{ friend.username }}</div>
+              </div>
+            </label>
+          {% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-brand w-100">Додати</button>
+      {% else %}
+        <p class="text-muted small mb-3">
+          Усі ваші друзі вже в цьому чаті, або у вас поки немає друзів, яких можна додати.
+        </p>
+      {% endif %}
+
+      <a href="{% url 'chat_info' chat.pk %}" class="btn btn-link w-100 mt-1 text-muted">Скасувати</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

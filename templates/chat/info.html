@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ chat.name|default:"Груповий чат" }} — SocialNet{% endblock %}
+
+{% block extra_css %}
+  <link href="{% static 'css/profile.css' %}" rel="stylesheet">
+  <link href="{% static 'css/groups.css' %}" rel="stylesheet">
+  <link href="{% static 'css/chat.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-md-7">
+
+    <div class="d-flex align-items-center gap-2 mb-2">
+      <a href="{% url 'chat_detail' chat.pk %}" class="btn-icon">
+        <svg class="icon"><use href="#icon-arrow-left"></use></svg>
+      </a>
+      <h1 class="h6 mb-0">Інформація про чат</h1>
+    </div>
+
+    <div class="chat-info-header anim-fade-in-up">
+      <div class="chat-info-avatar-wrap">
+        {% if chat.avatar %}
+          <img src="{{ chat.avatar.url }}" class="avatar avatar-xl" alt="">
+        {% else %}
+          <span class="avatar avatar-xl" style="background:var(--brand-gradient); color:#fff;">
+            <svg class="icon" width="32" height="32"><use href="#icon-users"></use></svg>
+          </span>
+        {% endif %}
+        {% if is_creator %}
+          <button type="button" class="chat-info-avatar-edit" data-bs-toggle="modal" data-bs-target="#chat-edit-modal" title="Змінити фото">
+            <svg class="icon"><use href="#icon-camera"></use></svg>
+          </button>
+        {% endif %}
+      </div>
+
+      <div class="chat-info-name-row">
+        <h2>{{ chat.name|default:"Груповий чат" }}</h2>
+        {% if is_creator %}
+          <button type="button" class="chat-info-edit-btn" data-bs-toggle="modal" data-bs-target="#chat-edit-modal" title="Редагувати назву">
+            <svg class="icon" width="16" height="16"><use href="#icon-pencil"></use></svg>
+          </button>
+        {% endif %}
+      </div>
+      <p class="text-muted small mb-0">{{ members|length }} учасників</p>
+    </div>
+
+    <div class="chat-info-section">
+      <a href="{% url 'chat_add_participant' chat.pk %}" class="chat-add-participant-row">
+        <span class="chat-add-icon">
+          <svg class="icon" width="20" height="20"><use href="#icon-user-plus"></use></svg>
+        </span>
+        Додати учасника
+      </a>
+    </div>
+
+    <div class="chat-info-section">
+      <div class="chat-info-section-title">Учасники ({{ members|length }})</div>
+      <div class="d-flex flex-column gap-2">
+        {% for member in members %}
+          <div class="member-row anim-stagger" style="--stagger: {{ forloop.counter0 }};">
+            {% if member.profile.avatar %}
+              <img src="{{ member.profile.avatar.url }}" class="avatar avatar-md" alt="">
+            {% else %}
+              <div class="avatar avatar-md">{{ member.username|first|upper }}</div>
+            {% endif %}
+            <div class="flex-grow-1 min-width-0">
+              <a href="{% url 'profile' member.username %}" class="fw-semibold text-decoration-none d-block text-truncate">
+                {{ member.get_full_name|default:member.username }}
+              </a>
+              <span class="text-muted small">@{{ member.username }}</span>
+            </div>
+            {% if member.pk == chat.creator_id %}
+              <span class="badge-admin flex-shrink-0">
+                <svg class="icon" width="14" height="14"><use href="#icon-crown"></use></svg>
+                Власник
+              </span>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="chat-info-section">
+      <div class="chat-info-section-title">Медіафайли</div>
+      {% if media_messages %}
+        <div class="profile-grid anim-fade-in">
+          {% for msg in media_messages %}
+            <a href="{% url 'chat_detail' chat.pk %}" class="profile-grid-item">
+              {% if msg.video %}
+                <video muted>
+                  <source src="{{ msg.video.url }}">
+                </video>
+                <span class="profile-grid-item-video-badge">
+                  <svg class="icon" fill="currentColor"><use href="#icon-video"></use></svg>
+                </span>
+              {% else %}
+                <img src="{{ msg.image.url }}" alt="" loading="lazy">
+              {% endif %}
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-muted small mb-0">У цьому чаті ще не надсилали фото чи відео.</p>
+      {% endif %}
+    </div>
+
+    <div class="chat-info-section">
+      <form method="post" action="{% url 'chat_leave' chat.pk %}" class="mb-2">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-secondary w-100"
+                onclick="return confirm('Вийти з групового чату?')">
+          Вийти з чату
+        </button>
+      </form>
+
+      {% if is_creator %}
+        <div class="danger-zone mt-2">
+          <h2>Небезпечна зона</h2>
+          <p class="small text-muted mb-2">
+            Видалення чату незворотне. Усі повідомлення будуть втрачені для всіх учасників.
+          </p>
+          <form method="post" action="{% url 'chat_delete' chat.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger btn-sm"
+                    onclick="return confirm('Видалити чат назавжди для всіх учасників?')">
+              Видалити чат
+            </button>
+          </form>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+{% if is_creator %}
+  <div class="modal fade" id="chat-edit-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content anim-scale-in">
+        <div class="modal-header">
+          <h5 class="modal-title">Редагувати чат</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрити"></button>
+        </div>
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="modal-body">
+            {% if form.non_field_errors %}
+              <div class="alert alert-danger py-2">
+                {% for error in form.non_field_errors %}<div class="small">{{ error }}</div>{% endfor %}
+              </div>
+            {% endif %}
+
+            <div class="mb-3">
+              <label for="{{ form.name.id_for_label }}" class="form-label">{{ form.name.label }}</label>
+              <input
+                type="text"
+                name="{{ form.name.html_name }}"
+                id="{{ form.name.id_for_label }}"
+                value="{{ form.name.value|default:'' }}"
+                class="form-control {% if form.name.errors %}is-invalid{% endif %}"
+                placeholder="Назва групового чату"
+              >
+              {% for error in form.name.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="mb-1">
+              <label for="{{ form.avatar.id_for_label }}" class="form-label">{{ form.avatar.label }}</label>
+              <input
+                type="file"
+                name="{{ form.avatar.html_name }}"
+                id="{{ form.avatar.id_for_label }}"
+                accept="image/*"
+                class="form-control {% if form.avatar.errors %}is-invalid{% endif %}"
+              >
+              {% for error in form.avatar.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-brand w-100">Зберегти</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

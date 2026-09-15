@@ -353,6 +353,13 @@ class Chat(models.Model):
         default='',
         verbose_name='Назва чату (для групових)',
     )
+    avatar = models.ImageField(
+        upload_to='chats/avatars/',
+        blank=True,
+        null=True,
+        verbose_name='Аватар чату',
+        help_text='Лише для групових чатів. Змінювати може власник (creator).',
+    )
     is_group = models.BooleanField(
         default=False,
         verbose_name='Груповий чат',

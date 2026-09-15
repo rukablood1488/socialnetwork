@@ -1,29 +1,19 @@
 <div class="chat-header">
   {% if active_chat.is_group %}
-    <div class="chat-icon-avatar avatar-md">
-         <svg class="icon" width="20" height="20"><use href="#icon-users"></use></svg>
-    </div>
-    <span class="fw-semibold">{{ active_chat.name|default:"Груповий чат" }}</span>
-
-    <div class="ms-auto d-flex gap-2">
-      <form method="post" action="{% url 'chat_leave' active_chat.pk %}">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-outline-secondary btn-sm"
-                onclick="return confirm('Вийти з групового чату?')">
-          Вийти
-        </button>
-      </form>
-
-      {% if active_chat.creator_id == request.user.id %}
-        <form method="post" action="{% url 'chat_delete' active_chat.pk %}">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-outline-danger btn-sm"
-                  onclick="return confirm('Видалити чат для всіх учасників? Це незворотно.')">
-            Видалити
-          </button>
-        </form>
+    <a href="{% url 'chat_info' active_chat.pk %}" class="chat-header-link">
+      {% if active_chat.avatar %}
+        <img src="{{ active_chat.avatar.url }}" class="avatar avatar-md" alt="">
+      {% else %}
+        <div class="chat-icon-avatar avatar-md">
+             <svg class="icon" width="20" height="20"><use href="#icon-users"></use></svg>
+        </div>
       {% endif %}
-    </div>
+      <span class="fw-semibold">{{ active_chat.name|default:"Груповий чат" }}</span>
+    </a>
+
+    <a href="{% url 'chat_info' active_chat.pk %}" class="btn-icon ms-auto" title="Інформація про чат">
+      <svg class="icon" width="20" height="20"><use href="#icon-info"></use></svg>
+    </a>
   {% else %}
     {% if other_user.profile.avatar %}
       <img src="{{ other_user.profile.avatar.url }}" class="avatar avatar-md" alt="">

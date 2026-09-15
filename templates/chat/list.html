@@ -74,9 +74,13 @@
             <a href="{% url 'chat_detail' item.chat.pk %}" class="chat-item-link">
 
               {% if item.chat.is_group %}
-                <div class="chat-icon-avatar avatar-md">
-                     <svg class="icon" width="20" height="20"><use href="#icon-users"></use></svg>
-                  </div>
+                {% if item.chat.avatar %}
+                  <img src="{{ item.chat.avatar.url }}" class="avatar avatar-md" alt="">
+                {% else %}
+                  <div class="chat-icon-avatar avatar-md">
+                       <svg class="icon" width="20" height="20"><use href="#icon-users"></use></svg>
+                    </div>
+                {% endif %}
               {% elif item.other_user.profile.avatar %}
                 <img src="{{ item.other_user.profile.avatar.url }}" class="avatar avatar-md" alt="">
               {% else %}
